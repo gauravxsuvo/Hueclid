@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Math of Color — Explained Simply</title>
+<style>
+  @page {
+    size: A4;
+    margin: 18mm 16mm 20mm 16mm;
+    @bottom-center { content: counter(page); }
+  }
+
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  :root {
+    --ink:      #1a1a2e;
+    --ink-soft: #4a4a63;
+    --ink-mute: #6e6e85;
+    --rule:     #dcdce8;
+    --paper:    #ffffff;
+    --tint:     #f6f6fb;
+    --accent:   #4338ca;
+    --accent-l: #eef0ff;
+    --warn:     #b45309;
+    --warn-l:   #fff7ed;
+    --good:     #047857;
+    --good-l:   #ecfdf5;
+    --bad:      #be123c;
+    --bad-l:    #fff1f3;
+  }
+
+  html { font-size: 10.5pt; }
+
+  body {
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    color: var(--ink);
+    line-height: 1.62;
+    margin: 0;
+    background: var(--paper);
+  }
+
+  h1, h2, h3, h4 { line-height: 1.25; margin: 0; font-weight: 700; }
+
+  h2 {
+    font-size: 19pt;
+    margin: 34px 0 4px;
+    padding-bottom: 8px;
+    border-bottom: 2.5px solid var(--accent);
+    page-break-after: avoid;
+    letter-spacing: -0.015em;
+  }
+  h2 .num {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 11pt;
+    padding: 1px 9px;
+    border-radius: 5px;
+    margin-right: 10px;
+    vertical-align: 3px;
+  }
+
+  h3 {
+    font-size: 13pt;
+    margin: 24px 0 7px;
+    color: var(--accent);
+    page-break-after: avoid;
+  }
+
+  h4 { font-size: 11pt; margin: 16px 0 5px; page-break-after: avoid; }
+
+  p { margin: 0 0 11px; }
+
+  strong { font-weight: 650; color: #000; }
+  em { font-style: italic; }
+
+  ul, ol { margin: 0 0 12px; padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  code, .mono {
+    font-family: "Cascadia Mono", Consolas, "Courier New", monospace;
+    font-size: 0.92em;
+  }
+  code {
+    background: var(--tint);
+    padding: 1px 5px;
+    border-radius: 3px;
+    border: 1px solid var(--rule);
+  }
+
+  /* ---------- formulas ---------- */
+  .formula {
+    font-family: "Cascadia Mono", Consolas, "Courier New", monospace;
+    background: #fbfbfe;
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent);
+    border-radius: 5px;
+    padding: 13px 17px;
+    margin: 14px 0;
+    font-size: 10pt;
+    line-height: 1.75;
+    white-space: pre;
+    overflow-x: auto;
+    page-break-inside: avoid;
+  }
+  .formula .cm { color: var(--ink-mute); font-style: italic; }
+  .formula .hl { color: var(--accent); font-weight: 700; }
+
+  .big-formula {
+    text-align: center;
+    font-size: 13pt;
+    padding: 18px;
+    background: var(--accent-l);
+    border: none;
+    border-left: 4px solid var(--accent);
+  }
+
+  /* ---------- callouts ---------- */
+  .box {
+    border-radius: 6px;
+    padding: 13px 16px;
+    margin: 15px 0;
+    page-break-inside: avoid;
+    border: 1px solid;
+  }
+  .box .t { font-weight: 700; display: block; margin-bottom: 5px; font-size: 10pt; letter-spacing: .02em; text-transform: uppercase; }
+  .box p:last-child, .box ul:last-child { margin-bottom: 0; }
+
+  .idea  { background: var(--accent-l); border-color: #c7cbf5; }
+  .idea .t { color: var(--accent); }
+  .try   { background: var(--good-l); border-color: #a7e8cf; }
+  .try .t { color: var(--good); }
+  .watch { background: var(--warn-l); border-color: #fcd9a8; }
+  .watch .t { color: var(--warn); }
+  .why   { background: var(--tint); border-color: var(--rule); }
+  .why .t { color: var(--ink-soft); }
+
+  /* ---------- tables ---------- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  th {
+    background: var(--ink);
+    color: #fff;
+    text-align: left;
+    padding: 7px 10px;
+    font-weight: 650;
+    font-size: 9pt;
+  }
+  td { padding: 6px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  tr:nth-child(even) td { background: #fafafd; }
+  td.c, th.c { text-align: center; }
+
+  /* ---------- color swatches ---------- */
+  .sw {
+    display: inline-block;
+    width: 13px; height: 13px;
+    border-radius: 3px;
+    border: 1px solid rgba(0,0,0,.22);
+    vertical-align: -2px;
+    margin-right: 4px;
+  }
+  .swatch-row { display: flex; gap: 8px; margin: 14px 0; page-break-inside: avoid; }
+  .swatch-row > div {
+    flex: 1;
+    height: 62px;
+    border-radius: 6px;
+    border: 1px solid rgba(0,0,0,.14);
+    position: relative;
+    font-size: 8pt;
+    font-family: "Cascadia Mono", Consolas, monospace;
+  }
+  .swatch-row > div span {
+    position: absolute; bottom: 5px; left: 0; right: 0;
+    text-align: center;
+  }
+
+  .demo {
+    padding: 12px 14px;
+    border-radius: 5px;
+    margin: 5px 0;
+    font-size: 10.5pt;
+  }
+
+  /* ---------- figures ---------- */
+  figure { margin: 18px 0; text-align: center; page-break-inside: avoid; }
+  figcaption {
+    font-size: 8.8pt;
+    color: var(--ink-mute);
+    margin-top: 8px;
+    font-style: italic;
+    max-width: 82%;
+    margin-left: auto; margin-right: auto;
+    line-height: 1.5;
+  }
+  svg { max-width: 100%; height: auto; }
+
+  /* ---------- cover ---------- */
+  .cover {
+    height: 246mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    page-break-after: always;
+    text-align: left;
+  }
+  .cover .spectrum {
+    height: 12px;
+    border-radius: 6px;
+    margin-bottom: 34px;
+    background: linear-gradient(90deg,#e11d48,#f59e0b,#facc15,#22c55e,#06b6d4,#4338ca,#9333ea);
+  }
+  .cover h1 {
+    font-size: 40pt;
+    letter-spacing: -0.03em;
+    line-height: 1.06;
+    margin-bottom: 16px;
+  }
+  .cover .sub {
+    font-size: 15pt;
+    color: var(--ink-soft);
+    font-weight: 400;
+    margin-bottom: 40px;
+    line-height: 1.45;
+  }
+  .cover .meta {
+    font-size: 10pt;
+    color: var(--ink-mute);
+    border-top: 1px solid var(--rule);
+    padding-top: 16px;
+  }
+  .cover .promise {
+    background: var(--tint);
+    border-left: 4px solid var(--accent);
+    padding: 16px 20px;
+    border-radius: 5px;
+    margin-bottom: 36px;
+    font-size: 10.5pt;
+  }
+
+  .toc { page-break-after: always; }
+  .toc ol { list-style: none; padding: 0; counter-reset: toc; }
+  .toc li {
+    counter-increment: toc;
+    padding: 7px 0;
+    border-bottom: 1px dotted var(--rule);
+    font-size: 10.5pt;
+  }
+  .toc li::before {
+    content: counter(toc);
+    display: inline-block;
+    width: 26px;
+    color: var(--accent);
+    font-weight: 700;
+    font-family: "Cascadia Mono", Consolas, monospace;
+  }
+  .toc li .d { color: var(--ink-mute); font-size: 9.3pt; display: block; margin-left: 26px; }
+
+  .lead {
+    font-size: 11.5pt;
+    color: var(--ink-soft);
+    margin-bottom: 18px;
+    line-height: 1.6;
+  }
+
+  .newpage { page-break-before: always; }
+  .keep { page-break-inside: avoid; }
+
+  .kv { display: flex; gap: 14px; margin: 12px 0; page-break-inside: avoid; }
+  .kv > div { flex: 1; background: var(--tint); border-radius: 6px; padding: 11px 13px; border: 1px solid var(--rule); }
+  .kv .k { font-size: 8.5pt; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-mute); font-weight: 650; }
+  .kv .v { font-size: 15pt; font-weight: 700; color: var(--accent); font-family: "Cascadia Mono", Consolas, monospace; }
+  .kv .n { font-size: 9pt; color: var(--ink-soft); }
+</style>
+</head>
+<body>
+
+<!-- ============ COVER ============ -->
+<section class="cover">
+  <div class="spectrum"></div>
+  <h1>The Math of Color</h1>
+  <div class="sub">How a computer turns a picture into a palette —<br>and proves you can actually read it</div>
+
+  <div class="promise">
+    <strong>What you need to know already:</strong> how to plot a point like (3, 5) on a graph,
+    the Pythagoras theorem, what a square root and a power are, and what the vertex of a parabola is.
+    <br><br>
+    <strong>What you don't need:</strong> calculus, matrices, or any prior color theory. Every symbol
+    is explained the first time it shows up.
+  </div>
+
+  <div class="meta">
+    Companion to the <em>Rangoli / ACCORD</em> project plan &nbsp;·&nbsp; Technical math reference, written for a first-time reader
+  </div>
+</section>
+
+<!-- ============ TOC ============ -->
+<section class="toc">
+  <h2 style="margin-top:0">What's inside</h2>
+  <ol>
+    <li>A color is just three numbers
+      <span class="d">RGB, and why your screen thinks in red, green and blue</span></li>
+    <li>The problem: RGB lies about distance
+      <span class="d">Why "10 apart" can look huge or invisible depending on the color</span></li>
+    <li>Repair #1 — undo the screen's cheat (gamma)
+      <span class="d">Why 128 is not half-brightness. It's 21.6%.</span></li>
+    <li>Repair #2 — measure like an eye, not a camera (XYZ)
+      <span class="d">Three numbers that match your three cone types</span></li>
+    <li>Repair #3 — the honest map (CIELAB)
+      <span class="d">Cube roots, and where the mysterious 116 and 16 come from</span></li>
+    <li>Measuring distance: Pythagoras in 3D
+      <span class="d">The formula you already know, with one extra term</span></li>
+    <li>Bending the ruler: &Delta;E<sub>00</sub>
+      <span class="d">Four correction factors, and what each one is apologising for</span></li>
+    <li>Finding the main colors: k-means
+      <span class="d">Magnets in a cloud of dust</span></li>
+    <li>Why the average is the best center &mdash; proved
+      <span class="d">A parabola, its vertex, and four lines of algebra</span></li>
+    <li>Why &Delta;E<sub>00</sub> breaks k-means (and the fix)
+      <span class="d">When the proof stops working, change the rules</span></li>
+    <li>Contrast: can you actually read it?
+      <span class="d">The current legal formula, and the two ways it's wrong</span></li>
+    <li>APCA: the better contrast formula
+      <span class="d">Polarity, and why dark mode is a different problem</span></li>
+    <li>The final puzzle: putting it all together
+      <span class="d">Why you can't fix contrast one pair at a time</span></li>
+    <li>Formula cheat sheet &amp; glossary
+      <span class="d">Everything on two pages, for when you're coding</span></li>
+  </ol>
+</section>
+
+<!-- ============ 1 ============ -->
+<h2><span class="num">1</span>A color is just three numbers</h2>
+
+<p class="lead">Before any math, we need to agree on what a color <em>is</em> to a computer.</p>
+
+<p>Zoom far enough into any screen and you find tiny lamps in groups of three: one red, one green,
+one blue. Every color you have ever seen on a screen is made by setting the brightness of those
+three lamps. Nothing else is happening.</p>
+
+<p>Each lamp gets a number from <strong>0</strong> (off) to <strong>255</strong> (fully on). So a
+color is an ordered triple:</p>
+
+<div class="formula big-formula">color = (R, G, B)</div>
+
+<div class="swatch-row">
+  <div style="background:#ff0000;color:#fff"><span>(255, 0, 0)</span></div>
+  <div style="background:#00ff00;color:#000"><span>(0, 255, 0)</span></div>
+  <div style="background:#0000ff;color:#fff"><span>(0, 0, 255)</span></div>
+  <div style="background:#ffff00;color:#000"><span>(255, 255, 0)</span></div>
+  <div style="background:#808080;color:#fff"><span>(128, 128, 128)</span></div>
+  <div style="background:#000000;color:#fff"><span>(0, 0, 0)</span></div>
+</div>
+
+<p>Why 0&ndash;255? Because that's exactly what fits in one byte (8 bits, so 2<sup>8</sup> = 256
+possible values). Three bytes per pixel, 256 &times; 256 &times; 256 = <strong>16,777,216</strong>
+possible colors. That's where "16.7 million colors" on a monitor box comes from.</p>
+
+<h3>This is secretly a coordinate system</h3>
+
+<p>Here is the move that turns color into mathematics. Those three numbers are exactly like the
+(x, y, z) coordinates of a point in space. So:</p>
+
+<ul>
+  <li>Red is the x-axis, green is the y-axis, blue is the z-axis.</li>
+  <li>Every possible color is one point inside a cube that runs from 0 to 255 on each side.</li>
+  <li>Black (0,0,0) is one corner. White (255,255,255) is the opposite corner.</li>
+  <li>The straight line joining those two corners is every shade of grey.</li>
+</ul>
+
+<figure>
+<svg viewBox="0 0 430 262" width="430">
+  <defs>
+    <linearGradient id="cFront" gradientUnits="userSpaceOnUse" x1="110" y1="212" x2="230" y2="92">
+      <stop offset="0%" stop-color="#000000"/><stop offset="100%" stop-color="#ffff00"/>
+    </linearGradient>
+    <linearGradient id="cTop" gradientUnits="userSpaceOnUse" x1="110" y1="92" x2="285" y2="52">
+      <stop offset="0%" stop-color="#00ff00"/><stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+    <linearGradient id="cRight" gradientUnits="userSpaceOnUse" x1="230" y1="212" x2="285" y2="52">
+      <stop offset="0%" stop-color="#ff0000"/><stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+  </defs>
+
+  <!-- three visible faces -->
+  <polygon points="110,92 230,92 230,212 110,212" fill="url(#cFront)" stroke="#2a2a3e" stroke-width="1"/>
+  <polygon points="110,92 165,52 285,52 230,92"   fill="url(#cTop)"   stroke="#2a2a3e" stroke-width="1"/>
+  <polygon points="230,92 285,52 285,172 230,212" fill="url(#cRight)" stroke="#2a2a3e" stroke-width="1"/>
+
+  <!-- hidden back edges -->
+  <g stroke="#9a9ab0" stroke-width=".9" stroke-dasharray="3,3" fill="none">
+    <path d="M110,212 L165,172 L285,172"/><path d="M165,52 L165,172"/>
+  </g>
+
+  <!-- the black-to-white body diagonal: white line with dark dashes = visible on any background -->
+  <line x1="110" y1="212" x2="285" y2="52" stroke="#ffffff" stroke-width="2.6"/>
+  <line x1="110" y1="212" x2="285" y2="52" stroke="#2a2a3e" stroke-width="2.6" stroke-dasharray="6,6"/>
+
+  <!-- corner dots -->
+  <circle cx="110" cy="212" r="4.5" fill="#000000" stroke="#fff" stroke-width="1.4"/>
+  <circle cx="285" cy="52"  r="4.5" fill="#ffffff" stroke="#2a2a3e" stroke-width="1.4"/>
+  <circle cx="230" cy="212" r="3.6" fill="#ff0000" stroke="#fff" stroke-width="1.1"/>
+  <circle cx="110" cy="92"  r="3.6" fill="#00ff00" stroke="#2a2a3e" stroke-width="1.1"/>
+
+  <g font-family="Segoe UI">
+    <!-- corner labels -->
+    <text x="292" y="42" font-size="9.5" fill="#1a1a2e" font-weight="700">white (255,255,255)</text>
+    <text x="104" y="228" font-size="9.5" text-anchor="end" fill="#1a1a2e" font-weight="700">black</text>
+    <text x="104" y="240" font-size="9.5" text-anchor="end" fill="#4a4a63">(0,0,0)</text>
+    <text x="236" y="228" font-size="9" fill="#c1121f" font-weight="700">red (255,0,0)</text>
+    <text x="104" y="88"  font-size="9" text-anchor="end" fill="#128a3c" font-weight="700">green</text>
+    <!-- diagonal annotation -->
+    <line x1="197" y1="132" x2="308" y2="112" stroke="#6e6e85" stroke-width=".9"/>
+    <circle cx="197" cy="132" r="2.4" fill="#6e6e85"/>
+    <text x="312" y="110" font-size="8.6" fill="#4a4a63" font-weight="700">this diagonal is</text>
+    <text x="312" y="121" font-size="8.6" fill="#4a4a63" font-weight="700">every shade of grey</text>
+    <!-- axis triad -->
+    <g transform="translate(44,214)">
+      <line x1="0" y1="0" x2="30" y2="0"   stroke="#e11d48" stroke-width="2"/>
+      <line x1="0" y1="0" x2="0"  y2="-30" stroke="#22c55e" stroke-width="2"/>
+      <line x1="0" y1="0" x2="19" y2="-14" stroke="#4338ca" stroke-width="2"/>
+      <circle cx="0" cy="0" r="2.4" fill="#1a1a2e"/>
+      <text x="34" y="4"   font-size="9" fill="#e11d48" font-weight="700">R</text>
+      <text x="-4" y="-33" font-size="9" fill="#22c55e" font-weight="700">G</text>
+      <text x="23" y="-17" font-size="9" fill="#4338ca" font-weight="700">B</text>
+    </g>
+  </g>
+</svg>
+<figcaption>The RGB cube. Every screen color is a point inside it. This picture is the reason we can
+use geometry on color at all &mdash; but as the next section shows, it is a <em>distorted</em> map.</figcaption>
+</figure>
+
+<div class="box idea">
+  <span class="t">The key idea</span>
+  <p>Once colors are points in space, "how different are these two colors?" becomes
+  "how far apart are these two points?" &mdash; and that is a question mathematics can answer
+  exactly. The entire project rests on this one translation.</p>
+</div>
+
+<!-- ============ 2 ============ -->
+<h2><span class="num">2</span>The problem: RGB lies about distance</h2>
+
+<p class="lead">The cube is a map of color. But it's a bad map &mdash; distances on it don't match
+what your eyes report.</p>
+
+<p>Let's test it. Below are two pairs of colors. In <strong>both</strong> pairs, the two colors are
+exactly <strong>40 units apart</strong> in the green channel &mdash; the same mathematical distance.</p>
+
+<div class="keep">
+<p style="margin-bottom:6px"><strong>Pair A</strong> &mdash; two greens, 40 apart:</p>
+<div class="swatch-row" style="margin-top:0">
+  <div style="background:rgb(0,120,0);color:#fff"><span>(0, 120, 0)</span></div>
+  <div style="background:rgb(0,160,0);color:#fff"><span>(0, 160, 0)</span></div>
+</div>
+
+<p style="margin-bottom:6px"><strong>Pair B</strong> &mdash; two blues, also 40 apart:</p>
+<div class="swatch-row" style="margin-top:0">
+  <div style="background:rgb(0,0,120);color:#fff"><span>(0, 0, 120)</span></div>
+  <div style="background:rgb(0,40,120);color:#fff"><span>(0, 40, 120)</span></div>
+</div>
+</div>
+
+<p>Look at them. The greens in Pair A are clearly different shades. The blues in Pair B are much
+harder to tell apart. Yet the mathematics insists they are <em>equally</em> different, because in
+both cases one number changed by 40.</p>
+
+<div class="box watch">
+  <span class="t">Why this is a real problem</span>
+  <p>Any algorithm that groups similar colors together has to ask "are these two close?" thousands of
+  times. If the ruler it uses gives the wrong answer, everything built on top is wrong. A palette
+  generator using raw RGB distance will happily merge two blues a human sees as distinct, while
+  splitting two greens a human sees as the same.</p>
+</div>
+
+<h3>The technical name for the flaw</h3>
+
+<p>RGB is <strong>not perceptually uniform</strong>. That phrase means exactly: <em>equal steps in
+the numbers do not produce equal steps in what you see.</em></p>
+
+<p>There are two separate reasons, and we fix them one at a time:</p>
+
+<div class="kv">
+  <div>
+    <div class="k">Reason 1</div>
+    <div class="v" style="font-size:12pt">Gamma</div>
+    <div class="n">The stored number isn't the actual amount of light. Fixed in Section 3.</div>
+  </div>
+  <div>
+    <div class="k">Reason 2</div>
+    <div class="v" style="font-size:12pt">Eye response</div>
+    <div class="n">Your eye is far more sensitive to green than blue. Fixed in Sections 4&ndash;5.</div>
+  </div>
+</div>
+
+<!-- ============ 3 ============ -->
+<h2><span class="num">3</span>Repair #1 &mdash; undo the screen's cheat</h2>
+
+<p class="lead">The single most surprising fact in this document: the number 128 does not mean
+half brightness. It means about 21.6% brightness.</p>
+
+<h3>Why screens cheat</h3>
+
+<p>Human vision is <strong>much</strong> better at telling dark shades apart than bright ones. Put a
+candle in a dark room and it's dramatic. Add one candle to a room with a hundred candles and nobody
+notices.</p>
+
+<p>Now imagine you're designing image storage and you only get 256 levels per channel. If you spread
+those 256 levels evenly across physical light output, you'd waste most of them at the bright end
+where nobody can see the difference &mdash; and you'd have far too few in the dark end, where every
+step is obvious. Dark areas would show ugly visible bands.</p>
+
+<p>So the designers of sRGB (the standard color format of the internet) did something clever: they
+<strong>packed more of the 256 levels into the dark region</strong>, where our eyes need them. The
+stored number is therefore not "how much light" &mdash; it's closer to "how bright this looks."
+The relationship is a curve, not a straight line.</p>
+
+<figure>
+<svg viewBox="0 0 400 240" width="400">
+  <!-- axes -->
+  <line x1="55" y1="200" x2="360" y2="200" stroke="#4a4a63" stroke-width="1.5"/>
+  <line x1="55" y1="200" x2="55" y2="30" stroke="#4a4a63" stroke-width="1.5"/>
+  <!-- straight reference -->
+  <line x1="55" y1="200" x2="330" y2="45" stroke="#b8b8cc" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <text x="332" y="36" font-size="8.5" fill="#8a8aa0" font-family="Segoe UI" font-style="italic" text-anchor="end">what you'd guess &mdash; a straight line</text>
+  <!-- gamma curve: y = x^2.4 -->
+  <path d="M55,200 L82,198.6 L110,195.2 L137,189.2 L165,180 L192,167.2 L220,150.2 L247,128.6 L275,101.8 L302,69.4 L330,45"
+        fill="none" stroke="#4338ca" stroke-width="2.6"/>
+  <text x="300" y="128" font-size="9" fill="#4338ca" font-family="Segoe UI" font-weight="700" text-anchor="middle">the real curve</text>
+  <!-- the 128 marker -->
+  <line x1="192" y1="200" x2="192" y2="167.2" stroke="#e11d48" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <line x1="55" y1="167.2" x2="192" y2="167.2" stroke="#e11d48" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <circle cx="192" cy="167.2" r="4.5" fill="#e11d48"/>
+  <text x="62" y="161" font-size="8.8" fill="#e11d48" font-family="Segoe UI" font-weight="700">only 21.6% of full light</text>
+  <text x="192" y="214" font-size="9" fill="#e11d48" text-anchor="middle" font-family="Segoe UI" font-weight="700">128</text>
+  <!-- labels -->
+  <text x="55" y="214" font-size="8.5" fill="#6e6e85" text-anchor="middle">0</text>
+  <text x="330" y="214" font-size="8.5" fill="#6e6e85" text-anchor="middle">255</text>
+  <text x="207" y="232" font-size="9" fill="#4a4a63" text-anchor="middle" font-family="Segoe UI">the number stored in the file</text>
+  <text x="20" y="120" font-size="9" fill="#4a4a63" text-anchor="middle" font-family="Segoe UI" transform="rotate(-90,20,120)">actual light emitted</text>
+  <text x="48" y="48" font-size="8.5" fill="#6e6e85" text-anchor="end">100%</text>
+  <text x="48" y="204" font-size="8.5" fill="#6e6e85" text-anchor="end">0%</text>
+</svg>
+<figcaption>The gamma curve. Because it bends downward, the middle stored value (128) produces far
+less than half the physical light. Every step near 0 is a tiny change in light; every step near 255
+is a big one.</figcaption>
+</figure>
+
+<h3>The formula that undoes it</h3>
+
+<p>To do honest physics on light, we have to convert the stored numbers back into real light amounts.
+This is called <strong>linearizing</strong>. First scale the 0&ndash;255 value down to 0&ndash;1 by
+dividing by 255. Then apply:</p>
+
+<div class="formula">C<sub>linear</sub> = C / 12.92                       <span class="cm">if C &le; 0.04045</span>
+C<sub>linear</sub> = ( (C + 0.055) / 1.055 )<sup>2.4</sup>       <span class="cm">otherwise</span></div>
+
+<p>Two branches, because the curve is a straight line very near zero and a power curve everywhere
+else. (The straight bit avoids a mathematical problem right at black; ignore it for now, we'll meet
+the same trick again in Section 5.)</p>
+
+<div class="box try">
+  <span class="t">Work it out yourself</span>
+  <p>Take the middle value, 128.</p>
+  <p><code>128 &divide; 255 = 0.502</code> &nbsp;&rarr;&nbsp; that's above 0.04045, so use the second branch.</p>
+  <p><code>(0.502 + 0.055) &divide; 1.055 = 0.528</code></p>
+  <p><code>0.528<sup>2.4</sup> = 0.216</code></p>
+  <p>So RGB 128 emits <strong>21.6%</strong> of full light &mdash; not 50%. Nearly every bug in
+  amateur color code traces back to someone forgetting this step.</p>
+</div>
+
+<!-- ============ 4 ============ -->
+<h2><span class="num">4</span>Repair #2 &mdash; measure like an eye, not a camera</h2>
+
+<p class="lead">Now we have honest light amounts. But "how much red light" still isn't the same as
+"what your eye reports."</p>
+
+<p>Inside your retina are three kinds of cone cells, each sensitive to a different range of
+wavelengths. They're usually called L, M and S (long, medium, short). Crucially, they
+<strong>don't</strong> line up with a screen's red, green and blue lamps &mdash; their sensitivity
+ranges overlap heavily, and they are wildly unequal in strength.</p>
+
+<p>In the 1920s the CIE (the international lighting standards body) ran experiments where people
+matched colors by mixing lights, and from that data they built a standard system called
+<strong>XYZ</strong>. Think of X, Y and Z as "what a standard human eye actually measures."</p>
+
+<h3>Converting is just three weighted recipes</h3>
+
+<div class="formula">X = 0.4124&thinsp;R + 0.3576&thinsp;G + 0.1804&thinsp;B
+<span class="hl">Y = 0.2127&thinsp;R + 0.7152&thinsp;G + 0.0722&thinsp;B</span>
+Z = 0.0193&thinsp;R + 0.1192&thinsp;G + 0.9503&thinsp;B
+
+<span class="cm">R, G, B here must be the LINEAR values from Section 3</span></div>
+
+<p>That's it &mdash; three ordinary weighted sums. (If you've met matrices, this is one 3&times;3
+matrix multiplication. If you haven't, nothing is lost: it's three lines of "multiply and add.")</p>
+
+<h3>Look closely at the middle row</h3>
+
+<p>The Y row is special. Y is <strong>luminance</strong> &mdash; how bright a color appears. And look
+at those weights:</p>
+
+<div class="kv">
+  <div><div class="k">Red contributes</div><div class="v">21.3%</div></div>
+  <div><div class="k">Green contributes</div><div class="v">71.5%</div></div>
+  <div><div class="k">Blue contributes</div><div class="v">7.2%</div></div>
+</div>
+
+<p>Green does almost three-quarters of the work. Blue does almost nothing. This isn't an arbitrary
+choice &mdash; it's measured biology. Your eye has far more green-sensitive machinery than
+blue-sensitive machinery.</p>
+
+<div class="box try">
+  <span class="t">See it for yourself</span>
+  <p>These two swatches are both "full blast" on one channel &mdash; (0,255,0) and (0,0,255).
+  Mathematically symmetric. Perceptually not even close.</p>
+  <div class="swatch-row" style="margin-bottom:6px">
+    <div style="background:rgb(0,255,0);color:#000"><span>green &nbsp;·&nbsp; Y = 0.715</span></div>
+    <div style="background:rgb(0,0,255);color:#fff"><span>blue &nbsp;·&nbsp; Y = 0.072</span></div>
+  </div>
+  <p>Pure green is about <strong>10&times; brighter</strong> to your eye than pure blue. This single
+  fact explains why yellow highlighter works and blue highlighter doesn't, and why blue text on
+  black is so hard to read.</p>
+</div>
+
+<!-- ============ 5 ============ -->
+<h2><span class="num">5</span>Repair #3 &mdash; the honest map (CIELAB)</h2>
+
+<p class="lead">One flaw left. Y is physically correct, but your <em>brain</em> doesn't respond to
+light in a straight line.</p>
+
+<p>Double the physical light and it does not look twice as bright &mdash; it looks maybe 25% brighter.
+Psychologists found that perceived intensity follows roughly a <strong>cube root</strong> of physical
+intensity. So to build a scale where equal steps <em>look</em> equal, we take cube roots.</p>
+
+<p>That is the core of <strong>CIELAB</strong> (usually just "Lab"), defined by the CIE in 1976 and
+still the workhorse of color science.</p>
+
+<h3>The formula</h3>
+
+<p>First, divide X, Y, Z by the values for reference white (the brightest white the system can show):
+X<sub>n</sub> = 0.9505, Y<sub>n</sub> = 1.0000, Z<sub>n</sub> = 1.0888. Then apply this helper
+function to each:</p>
+
+<div class="formula">f(t) = t<sup>1/3</sup>                       <span class="cm">if t is bigger than 0.008856</span>
+f(t) = (903.3 &times; t + 16) / 116        <span class="cm">otherwise (the straight-line bit near black)</span></div>
+
+<p>And finally:</p>
+
+<div class="formula big-formula">L* = 116 &times; f(Y/Y<sub>n</sub>) &minus; 16
+a* = 500 &times; ( f(X/X<sub>n</sub>) &minus; f(Y/Y<sub>n</sub>) )
+b* = 200 &times; ( f(Y/Y<sub>n</sub>) &minus; f(Z/Z<sub>n</sub>) )</div>
+
+<div class="box why">
+  <span class="t">Where 116 and 16 come from &mdash; they're not magic</span>
+  <p>The designers wanted L* to run from exactly 0 (black) to exactly 100 (white). Check it:</p>
+  <p><strong>Pure white:</strong> Y/Y<sub>n</sub> = 1, and 1<sup>1/3</sup> = 1.
+  So L* = 116 &times; 1 &minus; 16 = <strong>100</strong>. &#10003;</p>
+  <p><strong>Pure black:</strong> Y/Y<sub>n</sub> = 0, so we use the straight-line branch:
+  f(0) = (0 + 16)/116 = 16/116.
+  So L* = 116 &times; (16/116) &minus; 16 = 16 &minus; 16 = <strong>0</strong>. &#10003;</p>
+  <p>The 116 and the 16 exist purely to pin the ends of the scale at 0 and 100. Once you see it,
+  the formula stops looking arbitrary.</p>
+</div>
+
+<h3>What the three numbers mean</h3>
+
+<figure>
+<svg viewBox="0 0 500 278" width="500">
+<g font-family="Segoe UI">
+  <!-- ===== L* axis ===== -->
+  <rect x="44" y="30.00" width="34" height="6.28" fill="#ffffff"/><rect x="44" y="35.88" width="34" height="6.28" fill="#f7f7f7"/><rect x="44" y="41.76" width="34" height="6.28" fill="#eeeeee"/><rect x="44" y="47.65" width="34" height="6.28" fill="#e6e6e6"/><rect x="44" y="53.53" width="34" height="6.28" fill="#dddddd"/><rect x="44" y="59.41" width="34" height="6.28" fill="#d5d5d5"/><rect x="44" y="65.29" width="34" height="6.28" fill="#cdcdcd"/><rect x="44" y="71.18" width="34" height="6.28" fill="#c5c5c5"/><rect x="44" y="77.06" width="34" height="6.28" fill="#bdbdbd"/><rect x="44" y="82.94" width="34" height="6.28" fill="#b5b5b5"/><rect x="44" y="88.82" width="34" height="6.28" fill="#adadad"/><rect x="44" y="94.71" width="34" height="6.28" fill="#a5a5a5"/><rect x="44" y="100.59" width="34" height="6.28" fill="#9d9d9d"/><rect x="44" y="106.47" width="34" height="6.28" fill="#959595"/><rect x="44" y="112.35" width="34" height="6.28" fill="#8d8d8d"/><rect x="44" y="118.24" width="34" height="6.28" fill="#868686"/><rect x="44" y="124.12" width="34" height="6.28" fill="#7e7e7e"/><rect x="44" y="130.00" width="34" height="6.28" fill="#777777"/><rect x="44" y="135.88" width="34" height="6.28" fill="#707070"/><rect x="44" y="141.76" width="34" height="6.28" fill="#686868"/><rect x="44" y="147.65" width="34" height="6.28" fill="#616161"/><rect x="44" y="153.53" width="34" height="6.28" fill="#5a5a5a"/><rect x="44" y="159.41" width="34" height="6.28" fill="#535353"/><rect x="44" y="165.29" width="34" height="6.28" fill="#4c4c4c"/><rect x="44" y="171.18" width="34" height="6.28" fill="#454545"/><rect x="44" y="177.06" width="34" height="6.28" fill="#3f3f3f"/><rect x="44" y="182.94" width="34" height="6.28" fill="#383838"/><rect x="44" y="188.82" width="34" height="6.28" fill="#323232"/><rect x="44" y="194.71" width="34" height="6.28" fill="#2b2b2b"/><rect x="44" y="200.59" width="34" height="6.28" fill="#252525"/><rect x="44" y="206.47" width="34" height="6.28" fill="#1f1f1f"/><rect x="44" y="212.35" width="34" height="6.28" fill="#191919"/><rect x="44" y="218.24" width="34" height="6.28" fill="#131313"/><rect x="44" y="224.12" width="34" height="6.28" fill="#0b0b0b"/>
+  <rect x="44" y="30" width="34" height="200" fill="none" stroke="#4a4a63" stroke-width="1"/>
+  <text x="85" y="35" font-size="8.6" font-weight="700" fill="#1a1a2e">L* = 100</text>
+  <text x="85" y="45" font-size="8.2" fill="#6e6e85">white</text>
+  <text x="85" y="224" font-size="8.6" font-weight="700" fill="#1a1a2e">L* = 0</text>
+  <text x="85" y="234" font-size="8.2" fill="#6e6e85">black</text>
+  <text x="61.0" y="252" font-size="10" text-anchor="middle" font-weight="700" fill="#1a1a2e">L*</text>
+  <text x="61.0" y="264" font-size="8.4" text-anchor="middle" fill="#6e6e85">lightness</text>
+
+  <!-- ===== a*b* slice at L*=65 ===== -->
+  <rect x="320.62" y="189.38" width="6.25" height="6.25" fill="#24a5f7"/><rect x="326.88" y="189.38" width="6.25" height="6.25" fill="#47a2f7"/><rect x="333.12" y="189.38" width="6.25" height="6.25" fill="#5ca0f7"/><rect x="339.38" y="189.38" width="6.25" height="6.25" fill="#6e9df7"/><rect x="345.62" y="189.38" width="6.25" height="6.25" fill="#7d9af7"/><rect x="351.88" y="189.38" width="6.25" height="6.25" fill="#8a96f7"/><rect x="358.12" y="189.38" width="6.25" height="6.25" fill="#9693f7"/><rect x="364.38" y="189.38" width="6.25" height="6.25" fill="#a18ff8"/><rect x="370.62" y="189.38" width="6.25" height="6.25" fill="#ac8bf8"/><rect x="376.88" y="189.38" width="6.25" height="6.25" fill="#b687f8"/><rect x="383.12" y="189.38" width="6.25" height="6.25" fill="#bf83f8"/><rect x="389.38" y="189.38" width="6.25" height="6.25" fill="#c87ef8"/><rect x="395.62" y="189.38" width="6.25" height="6.25" fill="#d179f8"/><rect x="401.88" y="189.38" width="6.25" height="6.25" fill="#da73f8"/><rect x="408.12" y="189.38" width="6.25" height="6.25" fill="#e26df8"/><rect x="414.38" y="189.38" width="6.25" height="6.25" fill="#eb67f9"/><rect x="420.62" y="189.38" width="6.25" height="6.25" fill="#f35ff9"/><rect x="426.88" y="189.38" width="6.25" height="6.25" fill="#fb57f9"/><rect x="314.38" y="183.12" width="6.25" height="6.25" fill="#1aa7ee"/><rect x="320.62" y="183.12" width="6.25" height="6.25" fill="#41a5ee"/><rect x="326.88" y="183.12" width="6.25" height="6.25" fill="#58a2ee"/><rect x="333.12" y="183.12" width="6.25" height="6.25" fill="#6a9fee"/><rect x="339.38" y="183.12" width="6.25" height="6.25" fill="#799cee"/><rect x="345.62" y="183.12" width="6.25" height="6.25" fill="#8699ee"/><rect x="351.88" y="183.12" width="6.25" height="6.25" fill="#9296ee"/><rect x="358.12" y="183.12" width="6.25" height="6.25" fill="#9e92ee"/><rect x="364.38" y="183.12" width="6.25" height="6.25" fill="#a88fef"/><rect x="370.62" y="183.12" width="6.25" height="6.25" fill="#b28bef"/><rect x="376.88" y="183.12" width="6.25" height="6.25" fill="#bc86ef"/><rect x="383.12" y="183.12" width="6.25" height="6.25" fill="#c582ef"/><rect x="389.38" y="183.12" width="6.25" height="6.25" fill="#ce7def"/><rect x="395.62" y="183.12" width="6.25" height="6.25" fill="#d678ef"/><rect x="401.88" y="183.12" width="6.25" height="6.25" fill="#df72ef"/><rect x="408.12" y="183.12" width="6.25" height="6.25" fill="#e76cef"/><rect x="414.38" y="183.12" width="6.25" height="6.25" fill="#ef66f0"/><rect x="420.62" y="183.12" width="6.25" height="6.25" fill="#f75ef0"/><rect x="426.88" y="183.12" width="6.25" height="6.25" fill="#ff55f0"/><rect x="308.12" y="176.88" width="6.25" height="6.25" fill="#08a9e5"/><rect x="314.38" y="176.88" width="6.25" height="6.25" fill="#3ba7e5"/><rect x="320.62" y="176.88" width="6.25" height="6.25" fill="#53a4e5"/><rect x="326.88" y="176.88" width="6.25" height="6.25" fill="#66a1e5"/><rect x="333.12" y="176.88" width="6.25" height="6.25" fill="#759ee5"/><rect x="339.38" y="176.88" width="6.25" height="6.25" fill="#829ce5"/><rect x="345.62" y="176.88" width="6.25" height="6.25" fill="#8f98e5"/><rect x="351.88" y="176.88" width="6.25" height="6.25" fill="#9a95e5"/><rect x="358.12" y="176.88" width="6.25" height="6.25" fill="#a492e5"/><rect x="364.38" y="176.88" width="6.25" height="6.25" fill="#af8ee6"/><rect x="370.62" y="176.88" width="6.25" height="6.25" fill="#b88ae6"/><rect x="376.88" y="176.88" width="6.25" height="6.25" fill="#c186e6"/><rect x="383.12" y="176.88" width="6.25" height="6.25" fill="#ca81e6"/><rect x="389.38" y="176.88" width="6.25" height="6.25" fill="#d37ce6"/><rect x="395.62" y="176.88" width="6.25" height="6.25" fill="#db77e6"/><rect x="401.88" y="176.88" width="6.25" height="6.25" fill="#e372e6"/><rect x="408.12" y="176.88" width="6.25" height="6.25" fill="#eb6be6"/><rect x="414.38" y="176.88" width="6.25" height="6.25" fill="#f365e7"/><rect x="420.62" y="176.88" width="6.25" height="6.25" fill="#fb5de7"/><rect x="308.12" y="170.62" width="6.25" height="6.25" fill="#34a8dc"/><rect x="314.38" y="170.62" width="6.25" height="6.25" fill="#4ea6dc"/><rect x="320.62" y="170.62" width="6.25" height="6.25" fill="#61a3dc"/><rect x="326.88" y="170.62" width="6.25" height="6.25" fill="#71a1dc"/><rect x="333.12" y="170.62" width="6.25" height="6.25" fill="#7e9edc"/><rect x="339.38" y="170.62" width="6.25" height="6.25" fill="#8b9bdc"/><rect x="345.62" y="170.62" width="6.25" height="6.25" fill="#9698dc"/><rect x="351.88" y="170.62" width="6.25" height="6.25" fill="#a194dc"/><rect x="358.12" y="170.62" width="6.25" height="6.25" fill="#ab91dc"/><rect x="364.38" y="170.62" width="6.25" height="6.25" fill="#b48ddd"/><rect x="370.62" y="170.62" width="6.25" height="6.25" fill="#bd89dd"/><rect x="376.88" y="170.62" width="6.25" height="6.25" fill="#c685dd"/><rect x="383.12" y="170.62" width="6.25" height="6.25" fill="#cf80dd"/><rect x="389.38" y="170.62" width="6.25" height="6.25" fill="#d77cdd"/><rect x="395.62" y="170.62" width="6.25" height="6.25" fill="#df76dd"/><rect x="401.88" y="170.62" width="6.25" height="6.25" fill="#e771dd"/><rect x="408.12" y="170.62" width="6.25" height="6.25" fill="#ef6ade"/><rect x="414.38" y="170.62" width="6.25" height="6.25" fill="#f764de"/><rect x="420.62" y="170.62" width="6.25" height="6.25" fill="#fe5cde"/><rect x="301.88" y="164.38" width="6.25" height="6.25" fill="#2baad3"/><rect x="308.12" y="164.38" width="6.25" height="6.25" fill="#48a8d3"/><rect x="314.38" y="164.38" width="6.25" height="6.25" fill="#5ca6d3"/><rect x="320.62" y="164.38" width="6.25" height="6.25" fill="#6ca3d3"/><rect x="326.88" y="164.38" width="6.25" height="6.25" fill="#7aa0d3"/><rect x="333.12" y="164.38" width="6.25" height="6.25" fill="#869dd3"/><rect x="339.38" y="164.38" width="6.25" height="6.25" fill="#929ad3"/><rect x="345.62" y="164.38" width="6.25" height="6.25" fill="#9d97d3"/><rect x="351.88" y="164.38" width="6.25" height="6.25" fill="#a794d3"/><rect x="358.12" y="164.38" width="6.25" height="6.25" fill="#b090d4"/><rect x="364.38" y="164.38" width="6.25" height="6.25" fill="#ba8dd4"/><rect x="370.62" y="164.38" width="6.25" height="6.25" fill="#c289d4"/><rect x="376.88" y="164.38" width="6.25" height="6.25" fill="#cb84d4"/><rect x="383.12" y="164.38" width="6.25" height="6.25" fill="#d380d4"/><rect x="389.38" y="164.38" width="6.25" height="6.25" fill="#dc7bd4"/><rect x="395.62" y="164.38" width="6.25" height="6.25" fill="#e376d4"/><rect x="401.88" y="164.38" width="6.25" height="6.25" fill="#eb70d5"/><rect x="408.12" y="164.38" width="6.25" height="6.25" fill="#f36ad5"/><rect x="414.38" y="164.38" width="6.25" height="6.25" fill="#fa63d5"/><rect x="295.62" y="158.12" width="6.25" height="6.25" fill="#1eacc9"/><rect x="301.88" y="158.12" width="6.25" height="6.25" fill="#41aaca"/><rect x="308.12" y="158.12" width="6.25" height="6.25" fill="#56a8ca"/><rect x="314.38" y="158.12" width="6.25" height="6.25" fill="#67a5ca"/><rect x="320.62" y="158.12" width="6.25" height="6.25" fill="#75a2ca"/><rect x="326.88" y="158.12" width="6.25" height="6.25" fill="#82a0ca"/><rect x="333.12" y="158.12" width="6.25" height="6.25" fill="#8d9dca"/><rect x="339.38" y="158.12" width="6.25" height="6.25" fill="#989aca"/><rect x="345.62" y="158.12" width="6.25" height="6.25" fill="#a297ca"/><rect x="351.88" y="158.12" width="6.25" height="6.25" fill="#ac93cb"/><rect x="358.12" y="158.12" width="6.25" height="6.25" fill="#b590cb"/><rect x="364.38" y="158.12" width="6.25" height="6.25" fill="#be8ccb"/><rect x="370.62" y="158.12" width="6.25" height="6.25" fill="#c788cb"/><rect x="376.88" y="158.12" width="6.25" height="6.25" fill="#cf84cb"/><rect x="383.12" y="158.12" width="6.25" height="6.25" fill="#d77fcb"/><rect x="389.38" y="158.12" width="6.25" height="6.25" fill="#df7acb"/><rect x="395.62" y="158.12" width="6.25" height="6.25" fill="#e775cc"/><rect x="401.88" y="158.12" width="6.25" height="6.25" fill="#ef6fcc"/><rect x="408.12" y="158.12" width="6.25" height="6.25" fill="#f669cc"/><rect x="414.38" y="158.12" width="6.25" height="6.25" fill="#fe62cc"/><rect x="289.38" y="151.88" width="6.25" height="6.25" fill="#05aec0"/><rect x="295.62" y="151.88" width="6.25" height="6.25" fill="#38acc1"/><rect x="301.88" y="151.88" width="6.25" height="6.25" fill="#4fa9c1"/><rect x="308.12" y="151.88" width="6.25" height="6.25" fill="#61a7c1"/><rect x="314.38" y="151.88" width="6.25" height="6.25" fill="#70a5c1"/><rect x="320.62" y="151.88" width="6.25" height="6.25" fill="#7da2c1"/><rect x="326.88" y="151.88" width="6.25" height="6.25" fill="#899fc1"/><rect x="333.12" y="151.88" width="6.25" height="6.25" fill="#949cc1"/><rect x="339.38" y="151.88" width="6.25" height="6.25" fill="#9e99c1"/><rect x="345.62" y="151.88" width="6.25" height="6.25" fill="#a896c2"/><rect x="351.88" y="151.88" width="6.25" height="6.25" fill="#b193c2"/><rect x="358.12" y="151.88" width="6.25" height="6.25" fill="#ba8fc2"/><rect x="364.38" y="151.88" width="6.25" height="6.25" fill="#c38bc2"/><rect x="370.62" y="151.88" width="6.25" height="6.25" fill="#cb87c2"/><rect x="376.88" y="151.88" width="6.25" height="6.25" fill="#d383c2"/><rect x="383.12" y="151.88" width="6.25" height="6.25" fill="#db7fc2"/><rect x="389.38" y="151.88" width="6.25" height="6.25" fill="#e37ac3"/><rect x="395.62" y="151.88" width="6.25" height="6.25" fill="#eb74c3"/><rect x="401.88" y="151.88" width="6.25" height="6.25" fill="#f26ec3"/><rect x="408.12" y="151.88" width="6.25" height="6.25" fill="#f968c3"/><rect x="289.38" y="145.62" width="6.25" height="6.25" fill="#2dadb8"/><rect x="295.62" y="145.62" width="6.25" height="6.25" fill="#48abb8"/><rect x="301.88" y="145.62" width="6.25" height="6.25" fill="#5ba9b8"/><rect x="308.12" y="145.62" width="6.25" height="6.25" fill="#6aa7b8"/><rect x="314.38" y="145.62" width="6.25" height="6.25" fill="#78a4b8"/><rect x="320.62" y="145.62" width="6.25" height="6.25" fill="#84a2b8"/><rect x="326.88" y="145.62" width="6.25" height="6.25" fill="#8f9fb8"/><rect x="333.12" y="145.62" width="6.25" height="6.25" fill="#999cb8"/><rect x="339.38" y="145.62" width="6.25" height="6.25" fill="#a399b9"/><rect x="345.62" y="145.62" width="6.25" height="6.25" fill="#ad96b9"/><rect x="351.88" y="145.62" width="6.25" height="6.25" fill="#b692b9"/><rect x="358.12" y="145.62" width="6.25" height="6.25" fill="#be8fb9"/><rect x="364.38" y="145.62" width="6.25" height="6.25" fill="#c78bb9"/><rect x="370.62" y="145.62" width="6.25" height="6.25" fill="#cf87b9"/><rect x="376.88" y="145.62" width="6.25" height="6.25" fill="#d783b9"/><rect x="383.12" y="145.62" width="6.25" height="6.25" fill="#df7eba"/><rect x="389.38" y="145.62" width="6.25" height="6.25" fill="#e679ba"/><rect x="395.62" y="145.62" width="6.25" height="6.25" fill="#ee74ba"/><rect x="401.88" y="145.62" width="6.25" height="6.25" fill="#f56eba"/><rect x="408.12" y="145.62" width="6.25" height="6.25" fill="#fc67ba"/><rect x="283.12" y="139.38" width="6.25" height="6.25" fill="#1eafae"/><rect x="289.38" y="139.38" width="6.25" height="6.25" fill="#3fadaf"/><rect x="295.62" y="139.38" width="6.25" height="6.25" fill="#54abaf"/><rect x="301.88" y="139.38" width="6.25" height="6.25" fill="#64a9af"/><rect x="308.12" y="139.38" width="6.25" height="6.25" fill="#72a6af"/><rect x="314.38" y="139.38" width="6.25" height="6.25" fill="#7ea4af"/><rect x="320.62" y="139.38" width="6.25" height="6.25" fill="#8aa1af"/><rect x="326.88" y="139.38" width="6.25" height="6.25" fill="#949eaf"/><rect x="333.12" y="139.38" width="6.25" height="6.25" fill="#9e9cb0"/><rect x="339.38" y="139.38" width="6.25" height="6.25" fill="#a899b0"/><rect x="345.62" y="139.38" width="6.25" height="6.25" fill="#b195b0"/><rect x="351.88" y="139.38" width="6.25" height="6.25" fill="#ba92b0"/><rect x="358.12" y="139.38" width="6.25" height="6.25" fill="#c28eb0"/><rect x="364.38" y="139.38" width="6.25" height="6.25" fill="#ca8ab0"/><rect x="370.62" y="139.38" width="6.25" height="6.25" fill="#d286b0"/><rect x="376.88" y="139.38" width="6.25" height="6.25" fill="#da82b1"/><rect x="383.12" y="139.38" width="6.25" height="6.25" fill="#e27db1"/><rect x="389.38" y="139.38" width="6.25" height="6.25" fill="#e978b1"/><rect x="395.62" y="139.38" width="6.25" height="6.25" fill="#f173b1"/><rect x="401.88" y="139.38" width="6.25" height="6.25" fill="#f86db1"/><rect x="408.12" y="139.38" width="6.25" height="6.25" fill="#ff66b2"/><rect x="283.12" y="133.12" width="6.25" height="6.25" fill="#35afa6"/><rect x="289.38" y="133.12" width="6.25" height="6.25" fill="#4cada6"/><rect x="295.62" y="133.12" width="6.25" height="6.25" fill="#5daba6"/><rect x="301.88" y="133.12" width="6.25" height="6.25" fill="#6ca8a6"/><rect x="308.12" y="133.12" width="6.25" height="6.25" fill="#79a6a6"/><rect x="314.38" y="133.12" width="6.25" height="6.25" fill="#84a3a6"/><rect x="320.62" y="133.12" width="6.25" height="6.25" fill="#8fa1a6"/><rect x="326.88" y="133.12" width="6.25" height="6.25" fill="#999ea7"/><rect x="333.12" y="133.12" width="6.25" height="6.25" fill="#a39ba7"/><rect x="339.38" y="133.12" width="6.25" height="6.25" fill="#ac98a7"/><rect x="345.62" y="133.12" width="6.25" height="6.25" fill="#b595a7"/><rect x="351.88" y="133.12" width="6.25" height="6.25" fill="#bd91a7"/><rect x="358.12" y="133.12" width="6.25" height="6.25" fill="#c68ea7"/><rect x="364.38" y="133.12" width="6.25" height="6.25" fill="#ce8aa8"/><rect x="370.62" y="133.12" width="6.25" height="6.25" fill="#d586a8"/><rect x="376.88" y="133.12" width="6.25" height="6.25" fill="#dd82a8"/><rect x="383.12" y="133.12" width="6.25" height="6.25" fill="#e57da8"/><rect x="389.38" y="133.12" width="6.25" height="6.25" fill="#ec78a8"/><rect x="395.62" y="133.12" width="6.25" height="6.25" fill="#f372a8"/><rect x="401.88" y="133.12" width="6.25" height="6.25" fill="#fa6ca9"/><rect x="276.88" y="126.88" width="6.25" height="6.25" fill="#26b09d"/><rect x="283.12" y="126.88" width="6.25" height="6.25" fill="#43ae9d"/><rect x="289.38" y="126.88" width="6.25" height="6.25" fill="#56ac9d"/><rect x="295.62" y="126.88" width="6.25" height="6.25" fill="#65aa9d"/><rect x="301.88" y="126.88" width="6.25" height="6.25" fill="#73a89d"/><rect x="308.12" y="126.88" width="6.25" height="6.25" fill="#7fa69d"/><rect x="314.38" y="126.88" width="6.25" height="6.25" fill="#8aa39d"/><rect x="320.62" y="126.88" width="6.25" height="6.25" fill="#94a09e"/><rect x="326.88" y="126.88" width="6.25" height="6.25" fill="#9e9e9e"/><rect x="333.12" y="126.88" width="6.25" height="6.25" fill="#a79b9e"/><rect x="339.38" y="126.88" width="6.25" height="6.25" fill="#b0989e"/><rect x="345.62" y="126.88" width="6.25" height="6.25" fill="#b8949e"/><rect x="351.88" y="126.88" width="6.25" height="6.25" fill="#c1919e"/><rect x="358.12" y="126.88" width="6.25" height="6.25" fill="#c98d9f"/><rect x="364.38" y="126.88" width="6.25" height="6.25" fill="#d18a9f"/><rect x="370.62" y="126.88" width="6.25" height="6.25" fill="#d8859f"/><rect x="376.88" y="126.88" width="6.25" height="6.25" fill="#e0819f"/><rect x="383.12" y="126.88" width="6.25" height="6.25" fill="#e77c9f"/><rect x="389.38" y="126.88" width="6.25" height="6.25" fill="#ee77a0"/><rect x="395.62" y="126.88" width="6.25" height="6.25" fill="#f672a0"/><rect x="401.88" y="126.88" width="6.25" height="6.25" fill="#fd6ca0"/><rect x="270.62" y="120.62" width="6.25" height="6.25" fill="#0db293"/><rect x="276.88" y="120.62" width="6.25" height="6.25" fill="#38b094"/><rect x="283.12" y="120.62" width="6.25" height="6.25" fill="#4dae94"/><rect x="289.38" y="120.62" width="6.25" height="6.25" fill="#5eac94"/><rect x="295.62" y="120.62" width="6.25" height="6.25" fill="#6caa94"/><rect x="301.88" y="120.62" width="6.25" height="6.25" fill="#79a894"/><rect x="308.12" y="120.62" width="6.25" height="6.25" fill="#84a594"/><rect x="314.38" y="120.62" width="6.25" height="6.25" fill="#8ea395"/><rect x="320.62" y="120.62" width="6.25" height="6.25" fill="#98a095"/><rect x="326.88" y="120.62" width="6.25" height="6.25" fill="#a29d95"/><rect x="333.12" y="120.62" width="6.25" height="6.25" fill="#ab9a95"/><rect x="339.38" y="120.62" width="6.25" height="6.25" fill="#b39795"/><rect x="345.62" y="120.62" width="6.25" height="6.25" fill="#bc9495"/><rect x="351.88" y="120.62" width="6.25" height="6.25" fill="#c49196"/><rect x="358.12" y="120.62" width="6.25" height="6.25" fill="#cc8d96"/><rect x="364.38" y="120.62" width="6.25" height="6.25" fill="#d38996"/><rect x="370.62" y="120.62" width="6.25" height="6.25" fill="#db8596"/><rect x="376.88" y="120.62" width="6.25" height="6.25" fill="#e28196"/><rect x="383.12" y="120.62" width="6.25" height="6.25" fill="#ea7c97"/><rect x="389.38" y="120.62" width="6.25" height="6.25" fill="#f17797"/><rect x="395.62" y="120.62" width="6.25" height="6.25" fill="#f87197"/><rect x="401.88" y="120.62" width="6.25" height="6.25" fill="#ff6b97"/><rect x="270.62" y="114.38" width="6.25" height="6.25" fill="#29b28a"/><rect x="276.88" y="114.38" width="6.25" height="6.25" fill="#43b08b"/><rect x="283.12" y="114.38" width="6.25" height="6.25" fill="#56ae8b"/><rect x="289.38" y="114.38" width="6.25" height="6.25" fill="#65ac8b"/><rect x="295.62" y="114.38" width="6.25" height="6.25" fill="#72aa8b"/><rect x="301.88" y="114.38" width="6.25" height="6.25" fill="#7ea78b"/><rect x="308.12" y="114.38" width="6.25" height="6.25" fill="#88a58b"/><rect x="314.38" y="114.38" width="6.25" height="6.25" fill="#93a28c"/><rect x="320.62" y="114.38" width="6.25" height="6.25" fill="#9ca08c"/><rect x="326.88" y="114.38" width="6.25" height="6.25" fill="#a59d8c"/><rect x="333.12" y="114.38" width="6.25" height="6.25" fill="#ae9a8c"/><rect x="339.38" y="114.38" width="6.25" height="6.25" fill="#b6978c"/><rect x="345.62" y="114.38" width="6.25" height="6.25" fill="#bf948d"/><rect x="351.88" y="114.38" width="6.25" height="6.25" fill="#c7908d"/><rect x="358.12" y="114.38" width="6.25" height="6.25" fill="#ce8d8d"/><rect x="364.38" y="114.38" width="6.25" height="6.25" fill="#d6898d"/><rect x="370.62" y="114.38" width="6.25" height="6.25" fill="#dd858d"/><rect x="376.88" y="114.38" width="6.25" height="6.25" fill="#e5808e"/><rect x="383.12" y="114.38" width="6.25" height="6.25" fill="#ec7b8e"/><rect x="389.38" y="114.38" width="6.25" height="6.25" fill="#f3768e"/><rect x="395.62" y="114.38" width="6.25" height="6.25" fill="#fa718e"/><rect x="264.38" y="108.12" width="6.25" height="6.25" fill="#0fb381"/><rect x="270.62" y="108.12" width="6.25" height="6.25" fill="#37b181"/><rect x="276.88" y="108.12" width="6.25" height="6.25" fill="#4cb082"/><rect x="283.12" y="108.12" width="6.25" height="6.25" fill="#5dae82"/><rect x="289.38" y="108.12" width="6.25" height="6.25" fill="#6bac82"/><rect x="295.62" y="108.12" width="6.25" height="6.25" fill="#77a982"/><rect x="301.88" y="108.12" width="6.25" height="6.25" fill="#82a782"/><rect x="308.12" y="108.12" width="6.25" height="6.25" fill="#8da582"/><rect x="314.38" y="108.12" width="6.25" height="6.25" fill="#96a283"/><rect x="320.62" y="108.12" width="6.25" height="6.25" fill="#a0a083"/><rect x="326.88" y="108.12" width="6.25" height="6.25" fill="#a89d83"/><rect x="333.12" y="108.12" width="6.25" height="6.25" fill="#b19a83"/><rect x="339.38" y="108.12" width="6.25" height="6.25" fill="#b99784"/><rect x="345.62" y="108.12" width="6.25" height="6.25" fill="#c19384"/><rect x="351.88" y="108.12" width="6.25" height="6.25" fill="#c99084"/><rect x="358.12" y="108.12" width="6.25" height="6.25" fill="#d18c84"/><rect x="364.38" y="108.12" width="6.25" height="6.25" fill="#d88884"/><rect x="370.62" y="108.12" width="6.25" height="6.25" fill="#e08485"/><rect x="376.88" y="108.12" width="6.25" height="6.25" fill="#e78085"/><rect x="383.12" y="108.12" width="6.25" height="6.25" fill="#ee7b85"/><rect x="389.38" y="108.12" width="6.25" height="6.25" fill="#f57685"/><rect x="395.62" y="108.12" width="6.25" height="6.25" fill="#fc7086"/><rect x="264.38" y="101.88" width="6.25" height="6.25" fill="#27b378"/><rect x="270.62" y="101.88" width="6.25" height="6.25" fill="#41b178"/><rect x="276.88" y="101.88" width="6.25" height="6.25" fill="#54af79"/><rect x="283.12" y="101.88" width="6.25" height="6.25" fill="#63ad79"/><rect x="289.38" y="101.88" width="6.25" height="6.25" fill="#70ab79"/><rect x="295.62" y="101.88" width="6.25" height="6.25" fill="#7ba979"/><rect x="301.88" y="101.88" width="6.25" height="6.25" fill="#86a779"/><rect x="308.12" y="101.88" width="6.25" height="6.25" fill="#90a479"/><rect x="314.38" y="101.88" width="6.25" height="6.25" fill="#9aa27a"/><rect x="320.62" y="101.88" width="6.25" height="6.25" fill="#a39f7a"/><rect x="326.88" y="101.88" width="6.25" height="6.25" fill="#ab9c7a"/><rect x="333.12" y="101.88" width="6.25" height="6.25" fill="#b49a7a"/><rect x="339.38" y="101.88" width="6.25" height="6.25" fill="#bc967b"/><rect x="345.62" y="101.88" width="6.25" height="6.25" fill="#c4937b"/><rect x="351.88" y="101.88" width="6.25" height="6.25" fill="#cb907b"/><rect x="358.12" y="101.88" width="6.25" height="6.25" fill="#d38c7b"/><rect x="364.38" y="101.88" width="6.25" height="6.25" fill="#da887c"/><rect x="370.62" y="101.88" width="6.25" height="6.25" fill="#e2847c"/><rect x="376.88" y="101.88" width="6.25" height="6.25" fill="#e9807c"/><rect x="383.12" y="101.88" width="6.25" height="6.25" fill="#f07b7c"/><rect x="389.38" y="101.88" width="6.25" height="6.25" fill="#f7767d"/><rect x="395.62" y="101.88" width="6.25" height="6.25" fill="#fe707d"/><rect x="258.12" y="95.62" width="6.25" height="6.25" fill="#05b56f"/><rect x="264.38" y="95.62" width="6.25" height="6.25" fill="#34b36f"/><rect x="270.62" y="95.62" width="6.25" height="6.25" fill="#4ab16f"/><rect x="276.88" y="95.62" width="6.25" height="6.25" fill="#5aaf6f"/><rect x="283.12" y="95.62" width="6.25" height="6.25" fill="#68ad70"/><rect x="289.38" y="95.62" width="6.25" height="6.25" fill="#74ab70"/><rect x="295.62" y="95.62" width="6.25" height="6.25" fill="#7fa970"/><rect x="301.88" y="95.62" width="6.25" height="6.25" fill="#8aa770"/><rect x="308.12" y="95.62" width="6.25" height="6.25" fill="#93a470"/><rect x="314.38" y="95.62" width="6.25" height="6.25" fill="#9da271"/><rect x="320.62" y="95.62" width="6.25" height="6.25" fill="#a59f71"/><rect x="326.88" y="95.62" width="6.25" height="6.25" fill="#ae9c71"/><rect x="333.12" y="95.62" width="6.25" height="6.25" fill="#b69971"/><rect x="339.38" y="95.62" width="6.25" height="6.25" fill="#be9672"/><rect x="345.62" y="95.62" width="6.25" height="6.25" fill="#c69372"/><rect x="351.88" y="95.62" width="6.25" height="6.25" fill="#cd8f72"/><rect x="358.12" y="95.62" width="6.25" height="6.25" fill="#d58c72"/><rect x="364.38" y="95.62" width="6.25" height="6.25" fill="#dc8873"/><rect x="370.62" y="95.62" width="6.25" height="6.25" fill="#e38473"/><rect x="376.88" y="95.62" width="6.25" height="6.25" fill="#ea7f73"/><rect x="383.12" y="95.62" width="6.25" height="6.25" fill="#f17a74"/><rect x="389.38" y="95.62" width="6.25" height="6.25" fill="#f87574"/><rect x="258.12" y="89.38" width="6.25" height="6.25" fill="#20b465"/><rect x="264.38" y="89.38" width="6.25" height="6.25" fill="#3db366"/><rect x="270.62" y="89.38" width="6.25" height="6.25" fill="#50b166"/><rect x="276.88" y="89.38" width="6.25" height="6.25" fill="#5faf66"/><rect x="283.12" y="89.38" width="6.25" height="6.25" fill="#6cad66"/><rect x="289.38" y="89.38" width="6.25" height="6.25" fill="#78ab66"/><rect x="295.62" y="89.38" width="6.25" height="6.25" fill="#83a967"/><rect x="301.88" y="89.38" width="6.25" height="6.25" fill="#8da667"/><rect x="308.12" y="89.38" width="6.25" height="6.25" fill="#96a467"/><rect x="314.38" y="89.38" width="6.25" height="6.25" fill="#9fa167"/><rect x="320.62" y="89.38" width="6.25" height="6.25" fill="#a89f68"/><rect x="326.88" y="89.38" width="6.25" height="6.25" fill="#b09c68"/><rect x="333.12" y="89.38" width="6.25" height="6.25" fill="#b89968"/><rect x="339.38" y="89.38" width="6.25" height="6.25" fill="#c09669"/><rect x="345.62" y="89.38" width="6.25" height="6.25" fill="#c89369"/><rect x="351.88" y="89.38" width="6.25" height="6.25" fill="#cf8f69"/><rect x="358.12" y="89.38" width="6.25" height="6.25" fill="#d78b69"/><rect x="364.38" y="89.38" width="6.25" height="6.25" fill="#de886a"/><rect x="370.62" y="89.38" width="6.25" height="6.25" fill="#e5836a"/><rect x="376.88" y="89.38" width="6.25" height="6.25" fill="#ec7f6a"/><rect x="383.12" y="89.38" width="6.25" height="6.25" fill="#f37a6b"/><rect x="389.38" y="89.38" width="6.25" height="6.25" fill="#fa756b"/><rect x="258.12" y="83.12" width="6.25" height="6.25" fill="#2db45c"/><rect x="264.38" y="83.12" width="6.25" height="6.25" fill="#44b25c"/><rect x="270.62" y="83.12" width="6.25" height="6.25" fill="#56b15c"/><rect x="276.88" y="83.12" width="6.25" height="6.25" fill="#64af5c"/><rect x="283.12" y="83.12" width="6.25" height="6.25" fill="#70ad5d"/><rect x="289.38" y="83.12" width="6.25" height="6.25" fill="#7bab5d"/><rect x="295.62" y="83.12" width="6.25" height="6.25" fill="#86a95d"/><rect x="301.88" y="83.12" width="6.25" height="6.25" fill="#90a65d"/><rect x="308.12" y="83.12" width="6.25" height="6.25" fill="#99a45e"/><rect x="314.38" y="83.12" width="6.25" height="6.25" fill="#a2a15e"/><rect x="320.62" y="83.12" width="6.25" height="6.25" fill="#aa9f5e"/><rect x="326.88" y="83.12" width="6.25" height="6.25" fill="#b29c5f"/><rect x="333.12" y="83.12" width="6.25" height="6.25" fill="#ba995f"/><rect x="339.38" y="83.12" width="6.25" height="6.25" fill="#c2965f"/><rect x="345.62" y="83.12" width="6.25" height="6.25" fill="#ca9260"/><rect x="351.88" y="83.12" width="6.25" height="6.25" fill="#d18f60"/><rect x="358.12" y="83.12" width="6.25" height="6.25" fill="#d88b60"/><rect x="364.38" y="83.12" width="6.25" height="6.25" fill="#e08761"/><rect x="370.62" y="83.12" width="6.25" height="6.25" fill="#e78361"/><rect x="376.88" y="83.12" width="6.25" height="6.25" fill="#ed7f61"/><rect x="383.12" y="83.12" width="6.25" height="6.25" fill="#f47a62"/><rect x="389.38" y="83.12" width="6.25" height="6.25" fill="#fb7562"/><rect x="251.88" y="76.88" width="6.25" height="6.25" fill="#10b651"/><rect x="258.12" y="76.88" width="6.25" height="6.25" fill="#36b452"/><rect x="264.38" y="76.88" width="6.25" height="6.25" fill="#4ab252"/><rect x="270.62" y="76.88" width="6.25" height="6.25" fill="#5ab152"/><rect x="276.88" y="76.88" width="6.25" height="6.25" fill="#68af53"/><rect x="283.12" y="76.88" width="6.25" height="6.25" fill="#74ad53"/><rect x="289.38" y="76.88" width="6.25" height="6.25" fill="#7eab53"/><rect x="295.62" y="76.88" width="6.25" height="6.25" fill="#89a853"/><rect x="301.88" y="76.88" width="6.25" height="6.25" fill="#92a654"/><rect x="308.12" y="76.88" width="6.25" height="6.25" fill="#9ba454"/><rect x="314.38" y="76.88" width="6.25" height="6.25" fill="#a4a154"/><rect x="320.62" y="76.88" width="6.25" height="6.25" fill="#ac9e55"/><rect x="326.88" y="76.88" width="6.25" height="6.25" fill="#b49c55"/><rect x="333.12" y="76.88" width="6.25" height="6.25" fill="#bc9955"/><rect x="339.38" y="76.88" width="6.25" height="6.25" fill="#c49656"/><rect x="345.62" y="76.88" width="6.25" height="6.25" fill="#cb9256"/><rect x="351.88" y="76.88" width="6.25" height="6.25" fill="#d38f57"/><rect x="358.12" y="76.88" width="6.25" height="6.25" fill="#da8b57"/><rect x="364.38" y="76.88" width="6.25" height="6.25" fill="#e18757"/><rect x="370.62" y="76.88" width="6.25" height="6.25" fill="#e88358"/><rect x="376.88" y="76.88" width="6.25" height="6.25" fill="#ef7e58"/><rect x="383.12" y="76.88" width="6.25" height="6.25" fill="#f67a59"/><rect x="389.38" y="76.88" width="6.25" height="6.25" fill="#fc7459"/><rect x="251.88" y="70.62" width="6.25" height="6.25" fill="#20b647"/><rect x="258.12" y="70.62" width="6.25" height="6.25" fill="#3db447"/><rect x="264.38" y="70.62" width="6.25" height="6.25" fill="#4fb247"/><rect x="270.62" y="70.62" width="6.25" height="6.25" fill="#5eb048"/><rect x="276.88" y="70.62" width="6.25" height="6.25" fill="#6bae48"/><rect x="283.12" y="70.62" width="6.25" height="6.25" fill="#77ac48"/><rect x="289.38" y="70.62" width="6.25" height="6.25" fill="#81aa49"/><rect x="295.62" y="70.62" width="6.25" height="6.25" fill="#8ba849"/><rect x="301.88" y="70.62" width="6.25" height="6.25" fill="#94a64a"/><rect x="308.12" y="70.62" width="6.25" height="6.25" fill="#9da34a"/><rect x="314.38" y="70.62" width="6.25" height="6.25" fill="#a6a14a"/><rect x="320.62" y="70.62" width="6.25" height="6.25" fill="#ae9e4b"/><rect x="326.88" y="70.62" width="6.25" height="6.25" fill="#b69b4b"/><rect x="333.12" y="70.62" width="6.25" height="6.25" fill="#be984c"/><rect x="339.38" y="70.62" width="6.25" height="6.25" fill="#c5954c"/><rect x="345.62" y="70.62" width="6.25" height="6.25" fill="#cd924c"/><rect x="351.88" y="70.62" width="6.25" height="6.25" fill="#d48f4d"/><rect x="358.12" y="70.62" width="6.25" height="6.25" fill="#db8b4d"/><rect x="364.38" y="70.62" width="6.25" height="6.25" fill="#e2874e"/><rect x="370.62" y="70.62" width="6.25" height="6.25" fill="#e9834e"/><rect x="376.88" y="70.62" width="6.25" height="6.25" fill="#f07e4f"/><rect x="383.12" y="70.62" width="6.25" height="6.25" fill="#f7794f"/><rect x="389.38" y="70.62" width="6.25" height="6.25" fill="#fd7450"/><rect x="251.88" y="64.38" width="6.25" height="6.25" fill="#2ab53c"/><rect x="258.12" y="64.38" width="6.25" height="6.25" fill="#42b43c"/><rect x="264.38" y="64.38" width="6.25" height="6.25" fill="#53b23c"/><rect x="270.62" y="64.38" width="6.25" height="6.25" fill="#62b03d"/><rect x="276.88" y="64.38" width="6.25" height="6.25" fill="#6eae3d"/><rect x="283.12" y="64.38" width="6.25" height="6.25" fill="#79ac3d"/><rect x="289.38" y="64.38" width="6.25" height="6.25" fill="#83aa3e"/><rect x="295.62" y="64.38" width="6.25" height="6.25" fill="#8da83e"/><rect x="301.88" y="64.38" width="6.25" height="6.25" fill="#96a63f"/><rect x="308.12" y="64.38" width="6.25" height="6.25" fill="#9fa33f"/><rect x="314.38" y="64.38" width="6.25" height="6.25" fill="#a7a140"/><rect x="320.62" y="64.38" width="6.25" height="6.25" fill="#b09e40"/><rect x="326.88" y="64.38" width="6.25" height="6.25" fill="#b79b41"/><rect x="333.12" y="64.38" width="6.25" height="6.25" fill="#bf9841"/><rect x="339.38" y="64.38" width="6.25" height="6.25" fill="#c79542"/><rect x="345.62" y="64.38" width="6.25" height="6.25" fill="#ce9242"/><rect x="351.88" y="64.38" width="6.25" height="6.25" fill="#d58e43"/><rect x="358.12" y="64.38" width="6.25" height="6.25" fill="#dc8b43"/><rect x="364.38" y="64.38" width="6.25" height="6.25" fill="#e38744"/><rect x="370.62" y="64.38" width="6.25" height="6.25" fill="#ea8244"/><rect x="376.88" y="64.38" width="6.25" height="6.25" fill="#f17e45"/><rect x="383.12" y="64.38" width="6.25" height="6.25" fill="#f87945"/><rect x="389.38" y="64.38" width="6.25" height="6.25" fill="#fe7446"/><rect x="245.62" y="58.12" width="6.25" height="6.25" fill="#02b72e"/><rect x="251.88" y="58.12" width="6.25" height="6.25" fill="#31b52f"/><rect x="258.12" y="58.12" width="6.25" height="6.25" fill="#47b42f"/><rect x="264.38" y="58.12" width="6.25" height="6.25" fill="#57b230"/><rect x="270.62" y="58.12" width="6.25" height="6.25" fill="#64b030"/><rect x="276.88" y="58.12" width="6.25" height="6.25" fill="#70ae31"/><rect x="283.12" y="58.12" width="6.25" height="6.25" fill="#7bac31"/><rect x="289.38" y="58.12" width="6.25" height="6.25" fill="#85aa32"/><rect x="295.62" y="58.12" width="6.25" height="6.25" fill="#8fa832"/><rect x="301.88" y="58.12" width="6.25" height="6.25" fill="#98a633"/><rect x="308.12" y="58.12" width="6.25" height="6.25" fill="#a1a333"/><rect x="314.38" y="58.12" width="6.25" height="6.25" fill="#a9a134"/><rect x="320.62" y="58.12" width="6.25" height="6.25" fill="#b19e35"/><rect x="326.88" y="58.12" width="6.25" height="6.25" fill="#b99b35"/><rect x="333.12" y="58.12" width="6.25" height="6.25" fill="#c09836"/><rect x="339.38" y="58.12" width="6.25" height="6.25" fill="#c89536"/><rect x="345.62" y="58.12" width="6.25" height="6.25" fill="#cf9237"/><rect x="351.88" y="58.12" width="6.25" height="6.25" fill="#d68e38"/><rect x="358.12" y="58.12" width="6.25" height="6.25" fill="#dd8b38"/><rect x="364.38" y="58.12" width="6.25" height="6.25" fill="#e48739"/><rect x="370.62" y="58.12" width="6.25" height="6.25" fill="#eb823a"/><rect x="376.88" y="58.12" width="6.25" height="6.25" fill="#f27e3a"/><rect x="383.12" y="58.12" width="6.25" height="6.25" fill="#f9793b"/><rect x="245.62" y="51.88" width="6.25" height="6.25" fill="#15b71e"/><rect x="251.88" y="51.88" width="6.25" height="6.25" fill="#37b51f"/><rect x="258.12" y="51.88" width="6.25" height="6.25" fill="#4ab41f"/><rect x="264.38" y="51.88" width="6.25" height="6.25" fill="#5ab220"/><rect x="270.62" y="51.88" width="6.25" height="6.25" fill="#67b021"/><rect x="276.88" y="51.88" width="6.25" height="6.25" fill="#73ae22"/><rect x="283.12" y="51.88" width="6.25" height="6.25" fill="#7dac22"/><rect x="289.38" y="51.88" width="6.25" height="6.25" fill="#87aa23"/><rect x="295.62" y="51.88" width="6.25" height="6.25" fill="#91a824"/><rect x="301.88" y="51.88" width="6.25" height="6.25" fill="#9aa625"/><rect x="308.12" y="51.88" width="6.25" height="6.25" fill="#a2a326"/><rect x="314.38" y="51.88" width="6.25" height="6.25" fill="#aaa126"/><rect x="320.62" y="51.88" width="6.25" height="6.25" fill="#b29e27"/><rect x="326.88" y="51.88" width="6.25" height="6.25" fill="#ba9b28"/><rect x="333.12" y="51.88" width="6.25" height="6.25" fill="#c29829"/><rect x="339.38" y="51.88" width="6.25" height="6.25" fill="#c9952a"/><rect x="345.62" y="51.88" width="6.25" height="6.25" fill="#d0922b"/><rect x="351.88" y="51.88" width="6.25" height="6.25" fill="#d78e2b"/><rect x="358.12" y="51.88" width="6.25" height="6.25" fill="#de8a2c"/><rect x="364.38" y="51.88" width="6.25" height="6.25" fill="#e5862d"/><rect x="370.62" y="51.88" width="6.25" height="6.25" fill="#ec822e"/><rect x="376.88" y="51.88" width="6.25" height="6.25" fill="#f37e2f"/><rect x="383.12" y="51.88" width="6.25" height="6.25" fill="#f97930"/><rect x="245.62" y="45.62" width="6.25" height="6.25" fill="#1fb700"/><rect x="251.88" y="45.62" width="6.25" height="6.25" fill="#3bb502"/><rect x="258.12" y="45.62" width="6.25" height="6.25" fill="#4eb304"/><rect x="264.38" y="45.62" width="6.25" height="6.25" fill="#5cb206"/><rect x="270.62" y="45.62" width="6.25" height="6.25" fill="#69b008"/><rect x="276.88" y="45.62" width="6.25" height="6.25" fill="#75ae0a"/><rect x="283.12" y="45.62" width="6.25" height="6.25" fill="#7fac0c"/><rect x="289.38" y="45.62" width="6.25" height="6.25" fill="#89aa0d"/><rect x="295.62" y="45.62" width="6.25" height="6.25" fill="#92a80f"/><rect x="301.88" y="45.62" width="6.25" height="6.25" fill="#9ba511"/><rect x="308.12" y="45.62" width="6.25" height="6.25" fill="#a3a312"/><rect x="314.38" y="45.62" width="6.25" height="6.25" fill="#aba014"/><rect x="320.62" y="45.62" width="6.25" height="6.25" fill="#b39e15"/><rect x="326.88" y="45.62" width="6.25" height="6.25" fill="#bb9b17"/><rect x="333.12" y="45.62" width="6.25" height="6.25" fill="#c39818"/><rect x="339.38" y="45.62" width="6.25" height="6.25" fill="#ca9519"/><rect x="345.62" y="45.62" width="6.25" height="6.25" fill="#d1911b"/><rect x="351.88" y="45.62" width="6.25" height="6.25" fill="#d88e1c"/><rect x="358.12" y="45.62" width="6.25" height="6.25" fill="#df8a1d"/><rect x="364.38" y="45.62" width="6.25" height="6.25" fill="#e6861f"/><rect x="370.62" y="45.62" width="6.25" height="6.25" fill="#ed8220"/><rect x="376.88" y="45.62" width="6.25" height="6.25" fill="#f37d21"/><rect x="383.12" y="45.62" width="6.25" height="6.25" fill="#fa7922"/><rect x="345.62" y="39.38" width="6.25" height="6.25" fill="#d29100"/><rect x="351.88" y="39.38" width="6.25" height="6.25" fill="#d98e01"/><rect x="358.12" y="39.38" width="6.25" height="6.25" fill="#e08a04"/><rect x="364.38" y="39.38" width="6.25" height="6.25" fill="#e78607"/><rect x="370.62" y="39.38" width="6.25" height="6.25" fill="#ed820a"/><rect x="376.88" y="39.38" width="6.25" height="6.25" fill="#f47d0d"/><rect x="383.12" y="39.38" width="6.25" height="6.25" fill="#fb7810"/>
+
+  <!-- axes through the slice -->
+  <line x1="222.0" y1="130.0" x2="438.0" y2="130.0" stroke="#1a1a2e" stroke-width=".9" opacity=".55"/>
+  <line x1="330.0" y1="22.0" x2="330.0" y2="238.0" stroke="#1a1a2e" stroke-width=".9" opacity=".55"/>
+  <circle cx="330.0" cy="130.0" r="3.2" fill="none" stroke="#1a1a2e" stroke-width="1.4"/>
+
+  <!-- direction labels -->
+  <text x="217.0" y="126.0"  font-size="9.5" text-anchor="end" font-weight="700" fill="#128a3c">green</text>
+  <text x="217.0" y="137.0"  font-size="8.2" text-anchor="end" fill="#6e6e85">&minus;a*</text>
+  <text x="443.0" y="126.0"  font-size="9.5" font-weight="700" fill="#c1121f">red</text>
+  <text x="443.0" y="137.0"  font-size="8.2" fill="#6e6e85">+a*</text>
+  <text x="330.0" y="16.0" font-size="9.5" text-anchor="middle" font-weight="700" fill="#a07800">yellow  +b*</text>
+  <text x="330.0" y="252.0" font-size="9.5" text-anchor="middle" font-weight="700" fill="#1d4ed8">blue  &minus;b*</text>
+  <text x="330.0" y="264.0" font-size="8.4" text-anchor="middle" fill="#6e6e85" font-style="italic">the centre (a*=0, b*=0) is pure grey</text>
+</g>
+</svg>
+<figcaption>The CIELAB space, drawn from real numbers. <strong>Left:</strong> the L* axis, black to
+white. <strong>Right:</strong> an actual horizontal slice through the space at L* = 65 &mdash; every
+patch is a genuine Lab color converted back to sRGB. The ragged edge is where colors stop being
+displayable on a screen.</figcaption>
+</figure>
+
+<div class="box idea">
+  <span class="t">Why green&ndash;red and blue&ndash;yellow, of all pairings?</span>
+  <p>Try to imagine a color that is reddish-green. Or bluish-yellow. You can't &mdash; and neither can
+  anyone else. These are genuinely impossible colors.</p>
+  <p>That's because your brain doesn't store color as "amount of red, amount of green, amount of
+  blue." It stores it as two <em>seesaws</em>: one that tips between red and green, one that tips
+  between blue and yellow. A seesaw can't tip both ways at once, which is why those colors can't
+  exist. This is Hering's <strong>opponent process theory</strong>, from the 1890s.</p>
+  <p>a* and b* are exactly those two seesaws. Lab isn't just a mathematical convenience &mdash;
+  it's shaped like your visual system.</p>
+</div>
+
+<h3>Where we've arrived</h3>
+
+<table>
+  <tr><th>Space</th><th>What it represents</th><th>Equal steps look equal?</th></tr>
+  <tr><td><strong>sRGB</strong></td><td>Screen lamp settings</td><td style="color:var(--bad)"><strong>No</strong> &mdash; badly distorted</td></tr>
+  <tr><td><strong>Linear RGB</strong></td><td>Actual light energy</td><td style="color:var(--bad)"><strong>No</strong> &mdash; physics, not perception</td></tr>
+  <tr><td><strong>XYZ</strong></td><td>What a standard eye measures</td><td style="color:var(--warn)"><strong>Better</strong>, still not uniform</td></tr>
+  <tr><td><strong>CIELAB</strong></td><td>What the brain perceives</td><td style="color:var(--good)"><strong>Yes</strong> &mdash; close enough to build on</td></tr>
+</table>
+
+<p>Every color in the picture now sits at an honest (L*, a*, b*) coordinate. We can finally measure
+distance.</p>
+
+<!-- ============ 6 ============ -->
+<h2><span class="num">6</span>Measuring distance: Pythagoras in 3D</h2>
+
+<p class="lead">You already know this formula. It just gets one more term.</p>
+
+<p>On a flat page, the distance between (x<sub>1</sub>, y<sub>1</sub>) and (x<sub>2</sub>, y<sub>2</sub>) is Pythagoras:</p>
+
+<div class="formula">d = &radic;( (x&#8322;&minus;x&#8321;)&sup2; + (y&#8322;&minus;y&#8321;)&sup2; )</div>
+
+<p>In 3D, you apply Pythagoras twice &mdash; once along the floor of a box, then once up the vertical
+edge &mdash; and the two square roots collapse into one. You just add the third squared term:</p>
+
+<div class="formula">d = &radic;( (x&#8322;&minus;x&#8321;)&sup2; + (y&#8322;&minus;y&#8321;)&sup2; + (z&#8322;&minus;z&#8321;)&sup2; )</div>
+
+<figure>
+<svg viewBox="0 0 340 190" width="430">
+  <polygon points="55,140 195,140 250,105 110,105" fill="#eef0ff" stroke="#b8bcf0" stroke-width="1"/>
+  <line x1="55" y1="140" x2="55" y2="55" stroke="#b8bcf0" stroke-width="1"/>
+  <line x1="195" y1="140" x2="195" y2="55" stroke="#b8bcf0" stroke-width="1" stroke-dasharray="3,2"/>
+  <line x1="250" y1="105" x2="250" y2="20" stroke="#b8bcf0" stroke-width="1"/>
+  <line x1="110" y1="105" x2="110" y2="20" stroke="#b8bcf0" stroke-width="1" stroke-dasharray="3,2"/>
+  <polygon points="55,55 195,55 250,20 110,20" fill="none" stroke="#b8bcf0" stroke-width="1" stroke-dasharray="3,2"/>
+  <!-- the two legs -->
+  <line x1="55" y1="140" x2="250" y2="105" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,3"/>
+  <line x1="250" y1="105" x2="250" y2="20" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,3"/>
+  <!-- the diagonal -->
+  <line x1="55" y1="140" x2="250" y2="20" stroke="#4338ca" stroke-width="3"/>
+  <circle cx="55" cy="140" r="5" fill="#4338ca"/>
+  <circle cx="250" cy="20" r="5" fill="#4338ca"/>
+  <text x="42" y="156" font-size="9.5" font-family="Segoe UI" font-weight="700" fill="#4338ca">color 1</text>
+  <text x="240" y="14" font-size="9.5" font-family="Segoe UI" font-weight="700" fill="#4338ca">color 2</text>
+  <text x="128" y="72" font-size="10" font-family="Segoe UI" font-weight="700" fill="#4338ca">d</text>
+  <text x="152" y="132" font-size="8.5" font-family="Segoe UI" fill="#b45309">step 1: across the floor</text>
+  <text x="256" y="66" font-size="8.5" font-family="Segoe UI" fill="#b45309">step 2: up</text>
+</svg>
+<figcaption>Pythagoras twice. The formula for the long blue diagonal is the flat-page formula with
+one extra squared term.</figcaption>
+</figure>
+
+<p>Applied to Lab, this gives the original 1976 color-difference formula, called
+<strong>&Delta;E<sub>76</sub></strong>. (&Delta; is the Greek letter delta, used throughout science
+to mean "change in" or "difference in." E is from the German <em>Empfindung</em>, "sensation.")</p>
+
+<div class="formula big-formula">&Delta;E<sub>76</sub> = &radic;( &Delta;L*&sup2; + &Delta;a*&sup2; + &Delta;b*&sup2; )</div>
+
+<p>And the number it produces has a real-world meaning, which is the whole point of all that work:</p>
+
+<table>
+  <tr><th class="c">&Delta;E</th><th>What it means to a human</th></tr>
+  <tr><td class="c"><strong>0</strong></td><td>Identical colors</td></tr>
+  <tr><td class="c"><strong>~1</strong></td><td>The <strong>just-noticeable difference</strong> &mdash; a trained eye, colors side by side, can just barely tell</td></tr>
+  <tr><td class="c"><strong>2&ndash;3</strong></td><td>Noticeable if you look carefully</td></tr>
+  <tr><td class="c"><strong>5</strong></td><td>Clearly two different colors</td></tr>
+  <tr><td class="c"><strong>10+</strong></td><td>Obviously, unmistakably different</td></tr>
+</table>
+
+<!-- ============ 7 ============ -->
+<h2><span class="num">7</span>Bending the ruler: &Delta;E<sub>00</sub></h2>
+
+<p class="lead">Lab got us most of the way. But when scientists tested it carefully against real
+human judgments, small errors remained &mdash; and one big one.</p>
+
+<p>Lab is <em>nearly</em> perceptually uniform, not perfectly. Three residual problems:</p>
+
+<ul>
+  <li>We're pickier about differences between <strong>dull, greyish colors</strong> than between
+      <strong>vivid, saturated</strong> ones. Two nearly-identical greys look different; two
+      nearly-identical bright crimsons look the same.</li>
+  <li>We're less sensitive to lightness changes at the <strong>very dark and very bright ends</strong>
+      than in the middle.</li>
+  <li><strong>Blue is a mess.</strong> The blue-violet region of Lab is measurably more warped than
+      anywhere else.</li>
+</ul>
+
+<p>In 2001 the CIE published a patch: <strong>CIEDE2000</strong>, written &Delta;E<sub>00</sub>.
+It looks terrifying, but it is doing something simple.</p>
+
+<div class="box idea">
+  <span class="t">One sentence that decodes the whole formula</span>
+  <p>&Delta;E<sub>00</sub> is the ordinary 3D distance formula with each term
+  <strong>divided by a correction factor</strong> &mdash; plus one extra term that fixes blue.</p>
+  <p>Dividing by a big number makes a difference <em>count for less</em>. It's grading on a curve: the
+  same 5-point gap means less on an easy test than on a hard one. Each correction factor asks "how
+  hard is this comparison for a human?" and scales the score accordingly.</p>
+</div>
+
+<h3>The shape of it</h3>
+
+<p>First, Lab's a* and b* get rewritten as <strong>chroma</strong> (C, meaning colorfulness &mdash;
+the distance out from the grey centre line) and <strong>hue</strong> (H, the angle around it). Then:</p>
+
+<div class="formula" style="font-size:11.5pt;background:var(--accent-l);line-height:1.9">&Delta;E<sub>00</sub> = &radic;(  <span style="color:#4338ca;font-weight:700">(&Delta;L / S<sub>L</sub>)&sup2;</span>
+        +  <span style="color:#047857;font-weight:700">(&Delta;C / S<sub>C</sub>)&sup2;</span>
+        +  <span style="color:#b45309;font-weight:700">(&Delta;H / S<sub>H</sub>)&sup2;</span>
+        +  <span style="color:#be123c;font-weight:700">R<sub>T</sub> &times; (&Delta;C / S<sub>C</sub>) &times; (&Delta;H / S<sub>H</sub>)</span>  )</div>
+
+<p>Compare that to &Delta;E<sub>76</sub> = &radic;(&Delta;L&sup2; + &Delta;a&sup2; + &Delta;b&sup2;).
+It's the same skeleton: three squared differences under a square root. Everything else is corrections.</p>
+
+<h3>What each correction is apologising for</h3>
+
+<table>
+  <tr><th style="width:70px">Term</th><th>Formula</th><th>What it's fixing</th></tr>
+  <tr>
+    <td><strong style="color:#4338ca">S<sub>L</sub></strong></td>
+    <td class="mono">1 + 0.015(L&#772;&minus;50)&sup2; / &radic;(20+(L&#772;&minus;50)&sup2;)</td>
+    <td>Lightness sensitivity dips at the extremes. The (L&minus;50)&sup2; is a parabola centred on
+        mid-grey &mdash; it's smallest in the middle, so corrections are smallest where we're sharpest.</td>
+  </tr>
+  <tr>
+    <td><strong style="color:#047857">S<sub>C</sub></strong></td>
+    <td class="mono">1 + 0.045 &times; C&#772;</td>
+    <td>The more colorful the pair, the bigger a chroma gap must be before you notice. Grows
+        straight-line with chroma.</td>
+  </tr>
+  <tr>
+    <td><strong style="color:#b45309">S<sub>H</sub></strong></td>
+    <td class="mono">1 + 0.015 &times; C&#772; &times; T</td>
+    <td>Same idea for hue. T is a wobbly wave built from four cosines, because hue sensitivity varies
+        depending on <em>which</em> hue you're at.</td>
+  </tr>
+  <tr>
+    <td><strong style="color:#be123c">R<sub>T</sub></strong></td>
+    <td class="mono">&minus;sin(2&Delta;&theta;) &times; R<sub>C</sub></td>
+    <td><strong>The blue fix.</strong> &Delta;&theta; peaks at hue angle 275&deg; &mdash; blue-violet.
+        Away from blue this term is essentially zero; near blue it kicks in hard.</td>
+  </tr>
+</table>
+
+<div class="box why">
+  <span class="t">The bar over the letter</span>
+  <p>C&#772; and L&#772; (read "C-bar", "L-bar") just mean the <em>average</em> of the two colors'
+  values. The corrections are based on where the pair sits <em>on average</em>, not on either one
+  alone &mdash; so the answer comes out the same whichever color you list first.</p>
+</div>
+
+<h3>The catch you'll pay for later</h3>
+
+<p>Look at that last term again. It's a <strong>cross-term</strong>: chroma multiplied by hue, and it
+can be <em>negative</em>. That breaks something.</p>
+
+<p>A proper distance (mathematicians say a <strong>metric</strong>) must obey the triangle
+inequality: going A&rarr;B&rarr;C can never be shorter than going straight A&rarr;C. It's the
+"no shortcut through a detour" rule, and it feels so obvious it's easy to forget it's an assumption.</p>
+
+<p>&Delta;E<sub>00</sub> <strong>breaks it</strong> in some regions. It is a
+<em>dissimilarity score</em>, not a true distance. Section 10 is entirely about the damage this does
+and how to work around it.</p>
+
+<!-- ============ 8 ============ -->
+<h2><span class="num">8</span>Finding the main colors: k-means</h2>
+
+<p class="lead">We can now measure color difference honestly. Next job: take a photo with two million
+pixels and boil it down to the handful of colors that actually define it.</p>
+
+<h3>The picture in your head</h3>
+
+<p>Take a photograph and throw away all arrangement &mdash; forget which pixel was where. You're left
+with a bag of two million colors. Now plot every one as a dot in the 3D Lab space from Section 5.</p>
+
+<p>They will not spread out evenly. They form <strong>clumps</strong>. A beach photo makes a big
+dense cloud in the blue region (sky and sea), a smaller warm cloud (sand), a few scattered specks
+(a red umbrella). Your eye reads those clouds as "the colors of this photo."</p>
+
+<p>So the task is precise: <strong>find the centre of each cloud.</strong> Those centres are the
+palette.</p>
+
+<h3>The algorithm, in four steps</h3>
+
+<p>This is <strong>k-means</strong>. The k is just how many colors you want. Imagine dropping k
+magnets into the dust cloud:</p>
+
+<figure>
+<svg viewBox="0 0 480 175" width="610">
+  <g font-family="Segoe UI">
+  <!-- panel 1 -->
+  <rect x="6" y="22" width="148" height="118" fill="#fbfbfe" stroke="#dcdce8" rx="5"/>
+  <text x="80" y="16" font-size="9" text-anchor="middle" font-weight="700" fill="#1a1a2e">1. Drop magnets in</text>
+  <g fill="#e11d48" opacity=".5"><circle cx="42" cy="52" r="3.2"/><circle cx="54" cy="45" r="3.2"/><circle cx="36" cy="65" r="3.2"/><circle cx="50" cy="62" r="3.2"/><circle cx="62" cy="56" r="3.2"/><circle cx="45" cy="76" r="3.2"/></g>
+  <g fill="#0891b2" opacity=".5"><circle cx="112" cy="96" r="3.2"/><circle cx="122" cy="88" r="3.2"/><circle cx="103" cy="105" r="3.2"/><circle cx="118" cy="108" r="3.2"/><circle cx="128" cy="99" r="3.2"/><circle cx="108" cy="88" r="3.2"/></g>
+  <path d="M78,44 l4.5,9 h-9 z" fill="#1a1a2e"/><circle cx="78" cy="48" r="5.5" fill="none" stroke="#1a1a2e" stroke-width="2"/>
+  <path d="M96,112 l4.5,9 h-9 z" fill="#1a1a2e"/><circle cx="96" cy="116" r="5.5" fill="none" stroke="#1a1a2e" stroke-width="2"/>
+  <text x="80" y="153" font-size="8" text-anchor="middle" fill="#6e6e85">placed far apart</text>
+
+  <!-- arrow -->
+  <path d="M160,80 l14,0 m-4,-4 l4,4 l-4,4" stroke="#4338ca" stroke-width="1.6" fill="none"/>
+
+  <!-- panel 2 -->
+  <rect x="180" y="22" width="148" height="118" fill="#fbfbfe" stroke="#dcdce8" rx="5"/>
+  <text x="254" y="16" font-size="9" text-anchor="middle" font-weight="700" fill="#1a1a2e">2. Each dot picks one</text>
+  <g stroke="#e11d48" stroke-width=".8" opacity=".45">
+    <line x1="216" y1="52" x2="240" y2="55"/><line x1="228" y1="45" x2="240" y2="55"/><line x1="210" y1="65" x2="240" y2="55"/>
+    <line x1="224" y1="62" x2="240" y2="55"/><line x1="236" y1="56" x2="240" y2="55"/><line x1="219" y1="76" x2="240" y2="55"/>
+  </g>
+  <g stroke="#0891b2" stroke-width=".8" opacity=".45">
+    <line x1="286" y1="96" x2="272" y2="104"/><line x1="296" y1="88" x2="272" y2="104"/><line x1="277" y1="105" x2="272" y2="104"/>
+    <line x1="292" y1="108" x2="272" y2="104"/><line x1="302" y1="99" x2="272" y2="104"/><line x1="282" y1="88" x2="272" y2="104"/>
+  </g>
+  <g fill="#e11d48"><circle cx="216" cy="52" r="3.2"/><circle cx="228" cy="45" r="3.2"/><circle cx="210" cy="65" r="3.2"/><circle cx="224" cy="62" r="3.2"/><circle cx="236" cy="56" r="3.2"/><circle cx="219" cy="76" r="3.2"/></g>
+  <g fill="#0891b2"><circle cx="286" cy="96" r="3.2"/><circle cx="296" cy="88" r="3.2"/><circle cx="277" cy="105" r="3.2"/><circle cx="292" cy="108" r="3.2"/><circle cx="302" cy="99" r="3.2"/><circle cx="282" cy="88" r="3.2"/></g>
+  <path d="M240,51 l4.5,9 h-9 z" fill="#1a1a2e"/><circle cx="240" cy="55" r="5.5" fill="none" stroke="#1a1a2e" stroke-width="2"/>
+  <path d="M272,100 l4.5,9 h-9 z" fill="#1a1a2e"/><circle cx="272" cy="104" r="5.5" fill="none" stroke="#1a1a2e" stroke-width="2"/>
+  <text x="254" y="153" font-size="8" text-anchor="middle" fill="#6e6e85">the nearest magnet</text>
+
+  <!-- arrow -->
+  <path d="M334,80 l14,0 m-4,-4 l4,4 l-4,4" stroke="#4338ca" stroke-width="1.6" fill="none"/>
+
+  <!-- panel 3 -->
+  <rect x="354" y="22" width="120" height="118" fill="#fbfbfe" stroke="#dcdce8" rx="5"/>
+  <text x="414" y="16" font-size="9" text-anchor="middle" font-weight="700" fill="#1a1a2e">3. Magnets recentre</text>
+  <g fill="#e11d48"><circle cx="382" cy="52" r="3.2"/><circle cx="394" cy="45" r="3.2"/><circle cx="376" cy="65" r="3.2"/><circle cx="390" cy="62" r="3.2"/><circle cx="402" cy="56" r="3.2"/><circle cx="385" cy="76" r="3.2"/></g>
+  <g fill="#0891b2"><circle cx="442" cy="96" r="3.2"/><circle cx="452" cy="88" r="3.2"/><circle cx="433" cy="105" r="3.2"/><circle cx="448" cy="108" r="3.2"/><circle cx="458" cy="99" r="3.2"/><circle cx="438" cy="88" r="3.2"/></g>
+  <path d="M388,55 l4.5,9 h-9 z" fill="#e11d48"/><circle cx="388" cy="59" r="5.5" fill="none" stroke="#e11d48" stroke-width="2.4"/>
+  <path d="M445,93 l4.5,9 h-9 z" fill="#0891b2"/><circle cx="445" cy="97" r="5.5" fill="none" stroke="#0891b2" stroke-width="2.4"/>
+  <text x="414" y="153" font-size="8" text-anchor="middle" fill="#6e6e85">to the average of their dots</text>
+  </g>
+</svg>
+<figcaption>One round of k-means. Repeat steps 2 and 3 until nothing moves. The final magnet
+positions are your palette.</figcaption>
+</figure>
+
+<ol>
+  <li><strong>Initialise.</strong> Drop k magnets into the space. Not at random &mdash; use
+      <strong>k-means++</strong>, which places the first one randomly and then deliberately places
+      each next one <em>far</em> from all existing ones. Random placement can drop two magnets in the
+      same cloud, leaving another cloud unclaimed, and the algorithm never recovers.</li>
+  <li><strong>Assign.</strong> Every dot measures its distance to all k magnets and joins the
+      closest one.</li>
+  <li><strong>Update.</strong> Each magnet moves to the <em>average position</em> of all the dots
+      that joined it.</li>
+  <li><strong>Repeat</strong> steps 2 and 3. Dots switch teams, magnets shift again. Eventually
+      nothing changes &mdash; the algorithm has <strong>converged</strong>. Done.</li>
+</ol>
+
+<h3>What it's actually minimising</h3>
+
+<p>Every algorithm like this is secretly trying to make one number as small as possible. Here that
+number is called <strong>inertia</strong> or WCSS (within-cluster sum of squares):</p>
+
+<div class="formula big-formula">inertia = &Sigma; (distance from each dot to its own magnet)&sup2;</div>
+
+<p>&Sigma; (capital sigma) means "add up all of these." So: for every dot, measure how far it is from
+its magnet, square that, and total it all. Low inertia means every dot is near its magnet &mdash;
+the palette represents the image well.</p>
+
+<div class="box why">
+  <span class="t">Why <em>squared</em> distance?</span>
+  <p>Two reasons. It kills minus signs (a dot 3 units left and one 3 units right both contribute 9,
+  not +3 and &minus;3 cancelling out). And it punishes big misses much harder than small ones &mdash;
+  being 10 away costs 100, while being 1 away ten times costs only 10. That pressure is what pulls
+  magnets toward genuine cloud centres.</p>
+  <p>But the real reason is deeper, and it's the subject of the next section.</p>
+</div>
+
+<!-- ============ 9 ============ -->
+<h2><span class="num">9</span>Why the average is the best center &mdash; proved</h2>
+
+<p class="lead">Step 3 says "move to the average." Why the average? Why not the middle value, or
+something cleverer? This is provable in four lines, and the proof is the hinge the whole project
+turns on.</p>
+
+<p>Let's simplify to one dimension &mdash; points on a number line. We have points
+x<sub>1</sub>, x<sub>2</sub>, …, x<sub>n</sub> and we want to find the single position <strong>c</strong>
+that minimises the total squared distance to all of them:</p>
+
+<div class="formula">f(c) = (x&#8321;&minus;c)&sup2; + (x&#8322;&minus;c)&sup2; + … + (x&#8345;&minus;c)&sup2;</div>
+
+<p><strong>Step 1 &mdash; expand each bracket.</strong> Using (a&minus;b)&sup2; = a&sup2; &minus; 2ab + b&sup2;:</p>
+
+<div class="formula">(x&#7522; &minus; c)&sup2;  =  x&#7522;&sup2; &minus; 2x&#7522;c + c&sup2;</div>
+
+<p><strong>Step 2 &mdash; add them all up</strong> and group by powers of c:</p>
+
+<div class="formula">f(c) = (&Sigma;x&#7522;&sup2;)  &minus;  2c(&Sigma;x&#7522;)  +  n&#183;c&sup2;</div>
+
+<p><strong>Step 3 &mdash; recognise the shape.</strong> Read that as a quadratic in c. Line it up
+against ac&sup2; + bc + constant:</p>
+
+<div class="formula">a = n              <span class="cm">(the number of points)</span>
+b = &minus;2&Sigma;x&#7522;         <span class="cm">(minus twice the total)</span>
+constant = &Sigma;x&#7522;&sup2;    <span class="cm">(doesn't involve c, so it can't affect where the minimum is)</span></div>
+
+<p>It's a <strong>parabola</strong>. And since a = n is a count of points, it's always positive
+&mdash; so the parabola opens upward and definitely has a lowest point.</p>
+
+<p><strong>Step 4 &mdash; find the vertex</strong> with the formula you already know,
+c = &minus;b / 2a:</p>
+
+<div class="formula big-formula">c = &minus;(&minus;2&Sigma;x&#7522;) / (2n)  =  2&Sigma;x&#7522; / 2n  =  <span class="hl">&Sigma;x&#7522; / n</span>  =  the average</div>
+
+<figure>
+<svg viewBox="0 0 400 200" width="470">
+  <line x1="45" y1="165" x2="365" y2="165" stroke="#4a4a63" stroke-width="1.5"/>
+  <line x1="45" y1="165" x2="45" y2="25" stroke="#4a4a63" stroke-width="1.5"/>
+  <path d="M70,42 Q205,215 340,42" fill="none" stroke="#4338ca" stroke-width="2.6"/>
+  <!-- vertex -->
+  <circle cx="205" cy="128.5" r="5.5" fill="#e11d48"/>
+  <line x1="205" y1="128.5" x2="205" y2="165" stroke="#e11d48" stroke-width="1.4" stroke-dasharray="3,2"/>
+  <text x="205" y="180" font-size="9.5" text-anchor="middle" fill="#e11d48" font-weight="700" font-family="Segoe UI">c = 5 (the average)</text>
+  <text x="214" y="144" font-size="8.8" fill="#e11d48" font-weight="700" font-family="Segoe UI">lowest point</text>
+  <text x="214" y="155" font-size="8.8" fill="#e11d48" font-weight="700" font-family="Segoe UI">f = 26</text>
+  <!-- the two symmetric trial points, c=4 and c=6, both scoring 29 -->
+  <circle cx="160" cy="112" r="3.8" fill="#8a8aa0"/>
+  <circle cx="250" cy="112" r="3.8" fill="#8a8aa0"/>
+  <text x="152" y="86" font-size="8.5" fill="#6e6e85" text-anchor="middle" font-family="Segoe UI">c = 4</text>
+  <text x="152" y="96" font-size="8.5" fill="#6e6e85" text-anchor="middle" font-family="Segoe UI">29</text>
+  <text x="258" y="86" font-size="8.5" fill="#6e6e85" text-anchor="middle" font-family="Segoe UI">c = 6</text>
+  <text x="258" y="96" font-size="8.5" fill="#6e6e85" text-anchor="middle" font-family="Segoe UI">29</text>
+  <line x1="152" y1="100" x2="158" y2="107" stroke="#b8b8cc" stroke-width=".9"/>
+  <line x1="258" y1="100" x2="252" y2="107" stroke="#b8b8cc" stroke-width=".9"/>
+  <text x="205" y="196" font-size="8.5" text-anchor="middle" fill="#6e6e85" font-family="Segoe UI" font-style="italic">where you put the center</text>
+  <text x="24" y="95" font-size="8.5" text-anchor="middle" fill="#6e6e85" font-family="Segoe UI" transform="rotate(-90,24,95)">total squared error</text>
+</svg>
+<figcaption>The proof, drawn. For points 2, 4 and 9 the error curve is a parabola whose vertex sits
+exactly at the average, 5. Note that 4 and 6 both score 29 &mdash; symmetric about the vertex, exactly
+as a parabola demands.</figcaption>
+</figure>
+
+<div class="box try">
+  <span class="t">Check it by hand</span>
+  <p>Points <strong>2, 4, 9</strong>. Average = (2+4+9)/3 = <strong>5</strong>.</p>
+  <p><code>c = 5:</code>&nbsp; 9 + 1 + 16 = <strong>26</strong></p>
+  <p><code>c = 4:</code>&nbsp; 4 + 0 + 25 = 29 &nbsp;&nbsp;&nbsp;<code>c = 6:</code>&nbsp; 16 + 4 + 9 = 29</p>
+  <p>5 wins. And notice that 4 and 6 tie &mdash; they're equal distances either side of the vertex.
+  Try any other value; you'll never beat 26.</p>
+</div>
+
+<div class="box idea">
+  <span class="t">Why this matters more than it looks</span>
+  <p>This is not a helpful rule of thumb. It's a <strong>guarantee</strong>. Step 3 of k-means doesn't
+  just move the magnet somewhere better &mdash; it moves it to the <em>provably optimal</em> spot.</p>
+  <p>And that guarantee is what makes k-means work at all. Every round, the assign step can only
+  lower inertia (dots move to closer magnets), and the update step can only lower inertia (magnets
+  move to optimal positions). So inertia <strong>strictly decreases every single round</strong>. It
+  can't go below zero. Therefore the algorithm must stop. It cannot loop forever.</p>
+  <p>Remember exactly how we got here: we expanded a <strong>squared Euclidean</strong> distance and
+  a parabola fell out. That's the only reason any of it works.</p>
+</div>
+
+<!-- ============ 10 ============ -->
+<h2><span class="num">10</span>Why &Delta;E<sub>00</sub> breaks k-means &mdash; and the fix</h2>
+
+<p class="lead">Now the collision. We want &Delta;E<sub>00</sub> because it's the honest ruler. But
+k-means only works because of the parabola. Put them together and something has to give.</p>
+
+<p>Redo Section 9's proof with &Delta;E<sub>00</sub> in place of ordinary distance. Step 1 fails
+immediately &mdash; there's nothing to expand. &Delta;E<sub>00</sub> has square roots, sines,
+cosines, seventh powers, and that negative cross-term. Multiplying it out doesn't produce
+ac&sup2; + bc + constant. It produces a lumpy curve with bumps and multiple valleys.</p>
+
+<figure>
+<svg viewBox="0 0 430 155" width="510">
+  <g font-family="Segoe UI">
+  <!-- left -->
+  <text x="105" y="14" font-size="9.5" text-anchor="middle" font-weight="700" fill="#047857">With squared Euclidean distance</text>
+  <line x1="25" y1="125" x2="190" y2="125" stroke="#4a4a63" stroke-width="1.2"/>
+  <path d="M42,32 Q107,170 172,32" fill="none" stroke="#047857" stroke-width="2.4"/>
+  <circle cx="107" cy="101" r="4.5" fill="#047857"/>
+  <line x1="107" y1="101" x2="107" y2="125" stroke="#047857" stroke-width="1.2" stroke-dasharray="3,2"/>
+  <text x="107" y="140" font-size="8.5" text-anchor="middle" fill="#047857" font-weight="700">one valley &mdash; the average</text>
+  <text x="107" y="151" font-size="8" text-anchor="middle" fill="#6e6e85">formula tells you exactly where</text>
+
+  <!-- right -->
+  <text x="325" y="14" font-size="9.5" text-anchor="middle" font-weight="700" fill="#be123c">With &#916;E&#8320;&#8320;</text>
+  <line x1="240" y1="125" x2="415" y2="125" stroke="#4a4a63" stroke-width="1.2"/>
+  <path d="M252,38 C268,88 278,64 292,86 C303,103 312,72 325,95 C336,114 344,70 358,88 C370,103 384,66 400,36"
+        fill="none" stroke="#be123c" stroke-width="2.4"/>
+  <circle cx="325" cy="95" r="4" fill="#f59e0b"/>
+  <circle cx="292" cy="86" r="4" fill="#f59e0b"/>
+  <circle cx="358" cy="88" r="4" fill="#f59e0b"/>
+  <circle cx="336" cy="106" r="4.5" fill="#be123c"/>
+  <text x="325" y="140" font-size="8.5" text-anchor="middle" fill="#be123c" font-weight="700">several valleys</text>
+  <text x="325" y="151" font-size="8" text-anchor="middle" fill="#6e6e85">no formula finds the true lowest</text>
+  </g>
+</svg>
+<figcaption>Left: the well-behaved parabola that makes k-means provably terminate. Right: what the
+error curve looks like under &Delta;E<sub>00</sub>. The average is no longer guaranteed to be the
+bottom &mdash; it may not even be <em>a</em> bottom.</figcaption>
+</figure>
+
+<p>The consequences are concrete, not theoretical:</p>
+
+<ul>
+  <li>The average is <strong>no longer the best center</strong>. Step 3 might move a magnet to a
+      <em>worse</em> position.</li>
+  <li>Inertia can therefore go <strong>up</strong> between rounds.</li>
+  <li>The termination argument collapses. The algorithm can oscillate between two states forever.</li>
+</ul>
+
+<h3>The fix: stop calculating, start choosing</h3>
+
+<p>The trouble comes entirely from <em>calculating</em> a center &mdash; inventing a brand-new point
+in space via a formula that no longer applies. So don't calculate one.</p>
+
+<p><strong>Rule change: the center must be one of the actual data points.</strong></p>
+
+<p>Now step 3 becomes a search rather than a computation. For each cluster: try every member in turn
+as the candidate center, measure the total &Delta;E<sub>00</sub> to all the others, and keep whichever
+scores lowest. A chosen center is called a <strong>medoid</strong>, and the algorithm is
+<strong>k-medoids</strong>.</p>
+
+<div class="box idea">
+  <span class="t">Why this rescues the guarantee</span>
+  <p>Because you literally try every option and keep the best one, the new center is <em>by
+  construction</em> at least as good as the old one &mdash; the old center was one of the options you
+  tried. Total error can never increase.</p>
+  <p>And this works for <strong>any</strong> measure of difference whatsoever. It doesn't need
+  squares, or a parabola, or even the triangle inequality. You've traded a clever formula for
+  honest brute force, and bought back the termination guarantee that &Delta;E<sub>00</sub> destroyed.</p>
+</div>
+
+<h3>The price, and how to pay it</h3>
+
+<p>Brute force costs. With n points in a cluster you test n candidates, and each test measures
+against n&minus;1 others &mdash; roughly n&sup2; comparisons. At two million pixels that's
+4&times;10<sup>12</sup> &Delta;E<sub>00</sub> evaluations per round. Completely impossible.</p>
+
+<p>The fix is to shrink n before you ever start, using a <strong>Lab histogram</strong>:</p>
+
+<div class="formula">Chop the Lab space into a 3D grid of small boxes (each 2 units on a side).
+Sweep the image once. Each pixel drops into whichever box it lands in.
+Keep only: <span class="hl">box position</span> + <span class="hl">how many pixels landed there</span>.</div>
+
+<p>A typical UI screenshot has millions of pixels but only a few hundred to a few thousand
+<em>occupied</em> boxes. So n drops from 2,000,000 to about 2,000 &mdash; and because the cost goes
+as n&sup2;, the work drops by a factor of about a <strong>million</strong>. Suddenly it runs in
+milliseconds.</p>
+
+<div class="box watch">
+  <span class="t">Bin, don't sample</span>
+  <p>The obvious alternative is to grab 20,000 random pixels and cluster those. Don't. Random
+  sampling throws information away, and it throws away exactly the wrong information.</p>
+  <p>Picture a website screenshot: white background, black text, and one small red logo covering
+  0.3% of the screen. That logo is the <strong>brand color</strong> &mdash; the single most important
+  color on the page. Random sampling reduces it to about 60 stray pixels, and the clustering treats
+  it as noise.</p>
+  <p>Histogram binning keeps <em>every</em> pixel's vote, with its correct weight. Nothing is lost,
+  and n still comes down by a factor of a thousand. It's strictly better. It also gives you the
+  cluster sizes for free, which you need anyway.</p>
+</div>
+
+<!-- ============ 11 ============ -->
+<h2><span class="num">11</span>Contrast: can you actually read it?</h2>
+
+<p class="lead">We can now extract a beautiful palette from any image. But beautiful isn't enough
+&mdash; someone has to be able to <em>read</em> text painted in these colors.</p>
+
+<p>Roughly 2.2 billion people live with some form of vision impairment. Low-contrast text is one of
+the most common and most easily avoided barriers on the web, and in many countries meeting a
+contrast standard is a legal requirement, not a nicety.</p>
+
+<h3>The current standard: WCAG 2.x</h3>
+
+<p>The Web Content Accessibility Guidelines define a <strong>contrast ratio</strong> between two
+colors using their luminance Y &mdash; which we already computed back in Section 4:</p>
+
+<div class="formula big-formula">contrast = (Y<sub>lighter</sub> + 0.05) / (Y<sub>darker</sub> + 0.05)</div>
+
+<p>The required minimums:</p>
+
+<div class="kv">
+  <div><div class="k">Normal text</div><div class="v">4.5 : 1</div><div class="n">Level AA</div></div>
+  <div><div class="k">Large text</div><div class="v">3 : 1</div><div class="n">18pt+, or 14pt bold</div></div>
+  <div><div class="k">Enhanced</div><div class="v">7 : 1</div><div class="n">Level AAA</div></div>
+</div>
+
+<div class="box why">
+  <span class="t">What is that + 0.05 doing there?</span>
+  <p>Two jobs. Mathematically, pure black has Y = 0, and dividing by zero explodes. The 0.05 keeps the
+  formula finite.</p>
+  <p>Physically, it models <strong>screen glare</strong>. A real screen showing pure black still
+  reflects a bit of room light back at you &mdash; it's never truly black. The 0.05 is a stand-in for
+  that reflected light.</p>
+  <p>Best possible score: white (Y=1) on black (Y=0) gives (1+0.05)/(0+0.05) = <strong>21</strong>.
+  That's why the scale tops out at 21:1.</p>
+</div>
+
+<h3>Two ways this formula is wrong</h3>
+
+<p>It's better than nothing, and it's the law in many places. But it has known, documented failures.</p>
+
+<h4>Flaw 1 &mdash; it can't tell light-on-dark from dark-on-light</h4>
+
+<p>The formula sorts the two colors into "lighter" and "darker" before dividing. So swapping text
+and background gives <em>exactly the same number</em>. Watch:</p>
+
+<div class="keep">
+<div class="demo" style="background:#ffffff;color:#767676;border:1px solid #dcdce8">
+  Grey <code style="background:#f2f2f2">#767676</code> text on white &mdash; WCAG says <strong>4.54 : 1</strong> &nbsp;(passes AA)
+</div>
+<div class="demo" style="background:#767676;color:#ffffff">
+  White text on grey <code style="background:#8a8a8a;border-color:#999;color:#fff">#767676</code> &mdash; WCAG says <strong>4.54 : 1</strong> &nbsp;(identical!)
+</div>
+</div>
+
+<p>Same number. But they don't read the same, and the reason has a name: <strong>halation</strong>.
+Light text on a dark background appears to bleed and glow outward, blurring the letterforms. For
+readers with astigmatism &mdash; and that's a large fraction of people &mdash; it's genuinely
+punishing. WCAG 2.x cannot see this at all, because it discards polarity before it starts computing.</p>
+
+<h4>Flaw 2 &mdash; it passes things that hurt to read</h4>
+
+<div class="keep">
+<div class="demo" style="background:#ffffff;color:#0000ff;border:1px solid #dcdce8">
+  Pure blue <code style="background:#f2f2f2">#0000FF</code> on white scores <strong>8.59 : 1</strong> &mdash; sailing past even the strict AAA level of 7:1.
+</div>
+</div>
+
+<p>Now actually try to read a paragraph of that. Most people find it distinctly uncomfortable.
+Two reasons: blue contributes only 7.2% of luminance (Section 4), so the formula sees plenty of
+brightness difference; and the centre of your retina has very few blue-sensitive cones, so blue
+edges land soft and slightly out of focus.</p>
+
+<p>The deeper issue is that WCAG 2.x's model assumes vision responds to light in a straight line.
+Section 3 showed that it doesn't &mdash; it's a curve. The formula also ignores font size and stroke
+weight completely, even though thin 12px text and bold 40px text obviously need different amounts of
+contrast.</p>
+
+<!-- ============ 12 ============ -->
+<h2><span class="num">12</span>APCA: the better contrast formula</h2>
+
+<p class="lead">APCA &mdash; the Advanced Perceptual Contrast Algorithm &mdash; is the proposed
+replacement, expected to land in WCAG 3.0.</p>
+
+<p>Instead of a ratio, it produces a single number called <strong>L<sup>c</sup></strong>
+("lightness contrast") on a scale from 0 to about 106.</p>
+
+<h3>The formula</h3>
+
+<div class="formula"><span class="cm">Step 1 — screen luminance (note: a plain 2.4 power, no two-branch curve)</span>
+Y = 0.2127&times;(R/255)<sup>2.4</sup> + 0.7152&times;(G/255)<sup>2.4</sup> + 0.0722&times;(B/255)<sup>2.4</sup>
+
+<span class="cm">Step 2 — soft clamp for very dark colors</span>
+if Y &lt; 0.022:   Y = Y + (0.022 &minus; Y)<sup>1.414</sup>
+
+<span class="cm">Step 3a — DARK text on LIGHT background</span>
+S  = ( Y<sub>bg</sub><sup>0.56</sup> &minus; Y<sub>text</sub><sup>0.57</sup> ) &times; 1.14
+L<sup>c</sup> = (S &minus; 0.027) &times; 100
+
+<span class="cm">Step 3b — LIGHT text on DARK background</span>
+S  = ( Y<sub>bg</sub><sup>0.65</sup> &minus; Y<sub>text</sub><sup>0.62</sup> ) &times; 1.14
+L<sup>c</sup> = (S + 0.027) &times; 100</div>
+
+<div class="box idea">
+  <span class="t">The one thing to notice</span>
+  <p>Steps 3a and 3b are <strong>different formulas</strong> with different exponents. That is the
+  entire point.</p>
+  <p>Look at 3a: the background is raised to 0.56 and the text to 0.57 &mdash; near-identical.
+  Now 3b: 0.65 and 0.62 &mdash; a much wider gap, and both higher. APCA is saying that light-on-dark
+  is a fundamentally different visual task, needing its own curve. That's the halation problem from
+  Section 11, encoded directly into the math.</p>
+  <p>Notice also that text and background are <em>not</em> interchangeable &mdash; each has its own
+  exponent. Swap them and you get a different answer, which is exactly right.</p>
+</div>
+
+<h3>Reading the scale</h3>
+
+<p>Because APCA knows contrast depends on how big and how heavy the text is, the threshold isn't a
+single number &mdash; it's a table:</p>
+
+<table>
+  <tr><th class="c" style="width:70px">|L<sup>c</sup>|</th><th>What it's good for</th></tr>
+  <tr><td class="c"><strong>90</strong></td><td>Preferred for body text; <em>required</em> for thin or small type</td></tr>
+  <tr><td class="c"><strong>75</strong></td><td>Minimum for body text (around 16px, normal weight)</td></tr>
+  <tr><td class="c"><strong>60</strong></td><td>Larger or heavier text (24px+, or 16px bold)</td></tr>
+  <tr><td class="c"><strong>45</strong></td><td>Large headings, 36px+</td></tr>
+  <tr><td class="c"><strong>30</strong></td><td>Absolute floor for any text &mdash; placeholders, disabled states</td></tr>
+  <tr><td class="c"><strong>15</strong></td><td>Non-text only: borders, dividers, decorative lines</td></tr>
+</table>
+
+<p>One more detail: L<sup>c</sup> comes out <strong>signed</strong>. Positive means dark-on-light,
+negative means light-on-dark. Use the size when comparing to the table, but keep the sign &mdash;
+it tells you which mode you're in.</p>
+
+<!-- ============ 13 ============ -->
+<h2><span class="num">13</span>The final puzzle: putting it together</h2>
+
+<p class="lead">Every piece is now on the table. Here's the problem they combine to solve &mdash; and
+why the obvious approach fails.</p>
+
+<p>A real interface doesn't need "five nice colors." It needs colors assigned to <strong>jobs</strong>:
+a background, a card surface, body text, muted text, a primary button, the label on that button, a
+border, a danger color. And the requirements live in the <em>relationships between</em> those jobs,
+not in the colors themselves.</p>
+
+<figure>
+<svg viewBox="0 0 460 224" width="545">
+  <g font-family="Segoe UI">
+  <!-- ===== nodes ===== -->
+  <rect x="30" y="14" width="84" height="34" rx="6" fill="#f6f6fb" stroke="#8a8aa0" stroke-width="1.6" stroke-dasharray="4,2"/>
+  <text x="72" y="29" font-size="9.5" text-anchor="middle" font-weight="700" fill="#4a4a63">border</text>
+  <text x="72" y="41" font-size="7.5" text-anchor="middle" fill="#6e6e85">dividers</text>
+
+  <rect x="30" y="96" width="84" height="34" rx="6" fill="#ffffff" stroke="#1a1a2e" stroke-width="1.6"/>
+  <text x="72" y="111" font-size="9.5" text-anchor="middle" font-weight="700" fill="#1a1a2e">bg</text>
+  <text x="72" y="123" font-size="7.5" text-anchor="middle" fill="#6e6e85">background</text>
+
+  <rect x="190" y="14" width="84" height="34" rx="6" fill="#1a1a2e" stroke="#1a1a2e" stroke-width="1.6"/>
+  <text x="232" y="29" font-size="9.5" text-anchor="middle" font-weight="700" fill="#ffffff">text</text>
+  <text x="232" y="41" font-size="7.5" text-anchor="middle" fill="#b8b8cc">body copy</text>
+
+  <rect x="190" y="168" width="84" height="34" rx="6" fill="#4338ca" stroke="#4338ca" stroke-width="1.6"/>
+  <text x="232" y="183" font-size="9.5" text-anchor="middle" font-weight="700" fill="#ffffff">primary</text>
+  <text x="232" y="195" font-size="7.5" text-anchor="middle" fill="#c7cbf5">button fill</text>
+
+  <rect x="352" y="168" width="92" height="34" rx="6" fill="#ffffff" stroke="#4338ca" stroke-width="1.6"/>
+  <text x="398" y="183" font-size="9.5" text-anchor="middle" font-weight="700" fill="#4338ca">onPrimary</text>
+  <text x="398" y="195" font-size="7.5" text-anchor="middle" fill="#6e6e85">button label</text>
+
+  <!-- ===== edges (drawn first, chips drawn over them) ===== -->
+  <line x1="72"  y1="96"  x2="72"  y2="48"  stroke="#8a8aa0" stroke-width="1.6" stroke-dasharray="4,3"/>
+  <line x1="114" y1="102" x2="190" y2="42"  stroke="#047857" stroke-width="1.8"/>
+  <line x1="85"  y1="130" x2="190" y2="180" stroke="#b45309" stroke-width="1.8"/>
+  <line x1="274" y1="185" x2="352" y2="185" stroke="#047857" stroke-width="1.8"/>
+  <line x1="232" y1="48"  x2="232" y2="168" stroke="#be123c" stroke-width="1.6" stroke-dasharray="3,3"/>
+
+  <!-- ===== threshold chips ===== -->
+  <g font-size="7.5" font-weight="700" text-anchor="middle">
+    <rect x="80"  y="65"  width="48" height="14" rx="3" fill="#f6f6fb" stroke="#8a8aa0" stroke-width=".8"/>
+    <text x="104" y="75"  fill="#4a4a63">Lc &#8805; 15</text>
+
+    <rect x="132" y="65"  width="48" height="14" rx="3" fill="#ecfdf5" stroke="#047857" stroke-width=".8"/>
+    <text x="156" y="75"  fill="#047857">Lc &#8805; 75</text>
+
+    <rect x="113" y="148" width="48" height="14" rx="3" fill="#fff7ed" stroke="#b45309" stroke-width=".8"/>
+    <text x="137" y="158" fill="#b45309">Lc &#8805; 45</text>
+
+    <rect x="289" y="178" width="48" height="14" rx="3" fill="#ecfdf5" stroke="#047857" stroke-width=".8"/>
+    <text x="313" y="188" fill="#047857">Lc &#8805; 75</text>
+
+    <rect x="206" y="101" width="52" height="14" rx="3" fill="#fff1f3" stroke="#be123c" stroke-width=".8"/>
+    <text x="232" y="111" fill="#be123c">&#916;E &#8805; 20</text>
+  </g>
+  </g>
+</svg>
+<figcaption>A simplified role graph. The boxes are jobs; the lines are hard requirements. Every
+single line must be satisfied at the same time, by one set of colors.</figcaption>
+</figure>
+
+<h3>Why you can't just fix them one at a time</h3>
+
+<p>The tempting approach: generate a palette, check each rule, and nudge any color that fails.</p>
+
+<p>It doesn't work, because <strong>the rules are chained</strong>. Suppose <code>text</code> is a
+little too light against <code>bg</code>. You darken it. Fine &mdash; but <code>text</code> also has
+to work against <code>surface</code>, and darkening it may have just broken that. Fix <em>that</em>
+and you might break the first one again. Real palettes get stuck in loops like this, and the loop
+isn't a bug in your patching logic &mdash; it's telling you the problem genuinely cannot be
+decomposed.</p>
+
+<div class="box idea">
+  <span class="t">The right way to think about it</span>
+  <p>This isn't a repair job. It's a <strong>puzzle where every constraint must hold at once</strong>
+  &mdash; much closer to Sudoku than to spell-check. In Sudoku you don't fix one square at a time
+  either; you reason about all the constraints together.</p>
+  <p>Computer science has a name for this shape of problem &mdash; a <strong>constraint satisfaction
+  problem</strong> &mdash; and solvers built for it that explore the possibilities systematically,
+  ruling out whole branches at once.</p>
+</div>
+
+<h3>The three-step plan</h3>
+
+<ol>
+  <li><strong>Generate candidates.</strong> Run k-medoids on the Lab histogram to get the image's
+      main colors. Then expand each one into a ladder of lighter and darker versions, keeping its hue
+      and colorfulness. Result: a few hundred candidates, all faithful to the original image.</li>
+  <li><strong>Precompute every pair.</strong> Calculate L<sup>c</sup> for all candidate pairs.
+      A few hundred squared is under 100,000 calculations &mdash; a few milliseconds. Now every rule
+      becomes a simple lookup: "which pairs are allowed for this line of the graph?"</li>
+  <li><strong>Solve the whole puzzle at once.</strong> Hand the roles, the candidates and the allowed
+      pairs to a constraint solver. It returns the combination that stays closest to the image's real
+      colors while satisfying <em>every</em> rule &mdash; or it <strong>proves that no combination
+      exists</strong>.</li>
+</ol>
+
+<div class="box try">
+  <span class="t">Why "proves none exists" is a feature, not a failure</span>
+  <p>Sometimes the request is genuinely impossible. If someone insists on a pale yellow brand color
+  for body text on a white background, no amount of cleverness will make that readable &mdash; the
+  math simply doesn't allow it.</p>
+  <p>A guessing algorithm just fails quietly and hands back something bad. A solver tells you
+  <em>which specific rule</em> is impossible, and why. That turns a dead end into useful advice:
+  <em>"your brand yellow can't carry body text on white; here's the nearest shade that can."</em></p>
+</div>
+
+<!-- ============ 14 ============ -->
+<h2><span class="num">14</span>Cheat sheet</h2>
+
+<p class="lead">Everything, compressed. Keep this next to you while coding.</p>
+
+<h3>The conversion chain</h3>
+
+<div class="formula"><span class="hl">sRGB (0-255)</span>
+   &darr;  divide by 255
+<span class="hl">sRGB (0-1)</span>
+   &darr;  C/12.92  if C &le; 0.04045,  else ((C+0.055)/1.055)^2.4
+<span class="hl">linear RGB</span>          &larr; real light amounts; do physics here
+   &darr;  three weighted sums (the 3&times;3 matrix)
+<span class="hl">XYZ</span>                 &larr; what a standard eye measures; Y = luminance
+   &darr;  cube roots, then scale by 116 / 500 / 200
+<span class="hl">CIELAB (L*,a*,b*)</span>   &larr; what the brain perceives; do geometry here</div>
+
+<h3>Key formulas</h3>
+
+<div class="formula"><span class="cm">— linearize sRGB —</span>
+C_lin = C/12.92                    if C &le; 0.04045
+C_lin = ((C + 0.055)/1.055)^2.4    otherwise
+
+<span class="cm">— linear RGB to XYZ (D65) —</span>
+X = 0.4124 R + 0.3576 G + 0.1804 B
+Y = 0.2127 R + 0.7152 G + 0.0722 B
+Z = 0.0193 R + 0.1192 G + 0.9503 B
+
+<span class="cm">— XYZ to CIELAB —   white: Xn=0.9505  Yn=1.0000  Zn=1.0888</span>
+f(t) = t^(1/3)               if t &gt; 0.008856
+f(t) = (903.3 t + 16)/116    otherwise
+
+L* = 116 f(Y/Yn) - 16
+a* = 500 ( f(X/Xn) - f(Y/Yn) )
+b* = 200 ( f(Y/Yn) - f(Z/Zn) )
+
+<span class="cm">— simple color difference (CIE76) —</span>
+dE76 = sqrt( dL^2 + da^2 + db^2 )
+
+<span class="cm">— corrected color difference (CIEDE2000) —</span>
+dE00 = sqrt( (dL/SL)^2 + (dC/SC)^2 + (dH/SH)^2 + RT (dC/SC)(dH/SH) )
+  SL = 1 + 0.015 (Lbar-50)^2 / sqrt(20 + (Lbar-50)^2)
+  SC = 1 + 0.045 Cbar
+  SH = 1 + 0.015 Cbar T
+  RT = -sin(2 dTheta) RC          <span class="cm">(the blue correction)</span>
+
+<span class="cm">— k-means objective —</span>
+inertia = SUM over all points of (distance to its own center)^2
+best center under squared Euclidean = the average   <span class="cm">(proved, Section 9)</span>
+best center under dE00 = search all members, keep the best  <span class="cm">(k-medoids)</span>
+
+<span class="cm">— WCAG 2.x contrast —</span>
+ratio = (Y_lighter + 0.05) / (Y_darker + 0.05)
+AA: 4.5 normal text, 3.0 large text.  AAA: 7.0.  Max possible: 21.
+
+<span class="cm">— APCA —</span>
+Y = 0.2127 (R/255)^2.4 + 0.7152 (G/255)^2.4 + 0.0722 (B/255)^2.4
+if Y &lt; 0.022:  Y = Y + (0.022 - Y)^1.414
+dark-on-light:  Lc = ((Ybg^0.56 - Ytxt^0.57) * 1.14 - 0.027) * 100
+light-on-dark:  Lc = ((Ybg^0.65 - Ytxt^0.62) * 1.14 + 0.027) * 100
+body text needs |Lc| &ge; 75.  Large headings &ge; 45.  Borders &ge; 15.</div>
+
+<h3>Numbers worth remembering</h3>
+
+<table>
+  <tr><th style="width:90px" class="c">Number</th><th>Meaning</th></tr>
+  <tr><td class="c mono"><strong>21.6%</strong></td><td>The actual light output of RGB 128. Not 50%.</td></tr>
+  <tr><td class="c mono"><strong>71.5%</strong></td><td>Green's share of perceived brightness. Blue's is 7.2%.</td></tr>
+  <tr><td class="c mono"><strong>0 – 100</strong></td><td>The L* scale, black to white.</td></tr>
+  <tr><td class="c mono"><strong>&Delta;E &asymp; 1</strong></td><td>Just-noticeable difference for a trained eye.</td></tr>
+  <tr><td class="c mono"><strong>21 : 1</strong></td><td>Maximum WCAG contrast (white on black).</td></tr>
+  <tr><td class="c mono"><strong>L<sup>c</sup> 75</strong></td><td>APCA minimum for body text.</td></tr>
+  <tr><td class="c mono"><strong>275&deg;</strong></td><td>The hue angle where &Delta;E<sub>00</sub>'s blue correction peaks.</td></tr>
+</table>
+
+<h3>Glossary</h3>
+
+<table>
+  <tr><th style="width:135px">Term</th><th>Meaning</th></tr>
+  <tr><td><strong>sRGB</strong></td><td>The standard color format of the web. Gamma-encoded, so the numbers aren't light amounts.</td></tr>
+  <tr><td><strong>Gamma</strong></td><td>The curve between stored number and emitted light. Exists so limited storage isn't wasted on brights.</td></tr>
+  <tr><td><strong>Linearize</strong></td><td>Undo gamma, recovering true light amounts. Required before any physics.</td></tr>
+  <tr><td><strong>Luminance (Y)</strong></td><td>How bright a color appears. Mostly green.</td></tr>
+  <tr><td><strong>CIELAB / Lab</strong></td><td>3D space where equal distances look equally different. L* = lightness, a* = green&ndash;red, b* = blue&ndash;yellow.</td></tr>
+  <tr><td><strong>Chroma (C)</strong></td><td>Colorfulness &mdash; how far from grey. Distance from the centre line in Lab.</td></tr>
+  <tr><td><strong>Hue (H)</strong></td><td>Which color it is &mdash; the angle around the centre line.</td></tr>
+  <tr><td><strong>&Delta;E</strong></td><td>A number for "how different do these two colors look." 1 &asymp; just noticeable.</td></tr>
+  <tr><td><strong>&Delta;E<sub>00</sub> / CIEDE2000</strong></td><td>The accurate but complicated version, with corrections for chroma, lightness and blue.</td></tr>
+  <tr><td><strong>Perceptually uniform</strong></td><td>Equal number steps produce equal visual steps. RGB isn't; Lab nearly is.</td></tr>
+  <tr><td><strong>Centroid</strong></td><td>A cluster center that is <em>calculated</em> (the average). Used by k-means.</td></tr>
+  <tr><td><strong>Medoid</strong></td><td>A cluster center that is <em>chosen</em> from real data points. Used by k-medoids.</td></tr>
+  <tr><td><strong>Inertia / WCSS</strong></td><td>Total squared distance from every point to its own center. Clustering minimises this.</td></tr>
+  <tr><td><strong>Convergence</strong></td><td>The point where more rounds change nothing. The algorithm stops.</td></tr>
+  <tr><td><strong>Triangle inequality</strong></td><td>A detour is never shorter than going direct. True distances obey it; &Delta;E<sub>00</sub> doesn't.</td></tr>
+  <tr><td><strong>WCAG</strong></td><td>Web Content Accessibility Guidelines. Version 2.x defines the current contrast-ratio rule.</td></tr>
+  <tr><td><strong>APCA / L<sup>c</sup></strong></td><td>The proposed replacement contrast metric. Polarity-aware, on a 0&ndash;106 scale.</td></tr>
+  <tr><td><strong>Halation</strong></td><td>The optical glow of light text on dark backgrounds. Painful with astigmatism; invisible to WCAG 2.x.</td></tr>
+  <tr><td><strong>Polarity</strong></td><td>Which way round it is: dark-on-light or light-on-dark. Different visual tasks.</td></tr>
+  <tr><td><strong>Gamut</strong></td><td>The set of colors a device can physically display. Lab can describe colors your screen can't show.</td></tr>
+</table>
+
+<div class="box idea" style="margin-top:26px">
+  <span class="t">The whole document in six lines</span>
+  <p><strong>1.</strong> A color is a point in 3D space.<br>
+  <strong>2.</strong> RGB is a distorted map of that space, so we convert to Lab, where distance means something.<br>
+  <strong>3.</strong> Distance in Lab is Pythagoras; &Delta;E<sub>00</sub> is Pythagoras with corrections bolted on.<br>
+  <strong>4.</strong> A palette is the set of cloud-centres in that space, found by k-means &mdash; or k-medoids, once &Delta;E<sub>00</sub> breaks the average.<br>
+  <strong>5.</strong> Contrast decides whether text is readable; WCAG 2.x gets it wrong in two known ways, and APCA fixes both.<br>
+  <strong>6.</strong> Real palettes must satisfy every contrast rule <em>simultaneously</em>, which makes it a puzzle for a constraint solver, not a series of patches.</p>
+</div>
+
+</body>
+</html>

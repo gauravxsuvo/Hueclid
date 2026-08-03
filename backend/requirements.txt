@@ -1,0 +1,9 @@
+numpy
+scikit-learn
+pillow
+fastapi
+uvicorn[standard]
+python-multipart
+pytest
+hypothesis
+httpx

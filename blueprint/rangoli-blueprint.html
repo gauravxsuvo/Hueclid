@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Rangoli: The Real Plan</title>
+<style>
+  @page {
+    size: A4;
+    margin: 18mm 16mm 20mm 16mm;
+    @bottom-center { content: counter(page); }
+  }
+
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  :root {
+    --ink:      #1a1a2e;
+    --ink-soft: #4a4a63;
+    --ink-mute: #6e6e85;
+    --rule:     #dcdce8;
+    --paper:    #ffffff;
+    --tint:     #f6f6fb;
+    --accent:   #4338ca;
+    --accent-l: #eef0ff;
+    --warn:     #b45309;
+    --warn-l:   #fff7ed;
+    --good:     #047857;
+    --good-l:   #ecfdf5;
+    --bad:      #be123c;
+    --bad-l:    #fff1f3;
+  }
+
+  html { font-size: 10.5pt; }
+
+  body {
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    color: var(--ink);
+    line-height: 1.62;
+    margin: 0;
+    background: var(--paper);
+  }
+
+  h1, h2, h3, h4 { line-height: 1.25; margin: 0; font-weight: 700; }
+
+  h2 {
+    font-size: 19pt;
+    margin: 34px 0 4px;
+    padding-bottom: 8px;
+    border-bottom: 2.5px solid var(--accent);
+    page-break-after: avoid;
+    letter-spacing: -0.015em;
+  }
+  h2 .num {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 11pt;
+    padding: 1px 9px;
+    border-radius: 5px;
+    margin-right: 10px;
+    vertical-align: 3px;
+  }
+
+  h3 {
+    font-size: 13pt;
+    margin: 24px 0 7px;
+    color: var(--accent);
+    page-break-after: avoid;
+  }
+
+  h4 { font-size: 11pt; margin: 16px 0 5px; page-break-after: avoid; }
+
+  p { margin: 0 0 11px; }
+
+  strong { font-weight: 650; color: #000; }
+  em { font-style: italic; }
+
+  ul, ol { margin: 0 0 12px; padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  code, .mono {
+    font-family: "Cascadia Mono", Consolas, "Courier New", monospace;
+    font-size: 0.92em;
+  }
+  code {
+    background: var(--tint);
+    padding: 1px 5px;
+    border-radius: 3px;
+    border: 1px solid var(--rule);
+  }
+
+  .formula {
+    font-family: "Cascadia Mono", Consolas, "Courier New", monospace;
+    background: #fbfbfe;
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent);
+    border-radius: 5px;
+    padding: 13px 17px;
+    margin: 14px 0;
+    font-size: 10pt;
+    line-height: 1.75;
+    white-space: pre;
+    overflow-x: auto;
+    page-break-inside: avoid;
+  }
+  .formula .cm { color: var(--ink-mute); font-style: italic; }
+  .formula .pass { color: var(--good); font-weight: 700; }
+  .formula .fail { color: var(--bad); font-weight: 700; }
+
+  .box {
+    border-radius: 6px;
+    padding: 13px 16px;
+    margin: 15px 0;
+    page-break-inside: avoid;
+    border: 1px solid;
+  }
+  .box .t { font-weight: 700; display: block; margin-bottom: 5px; font-size: 10pt; letter-spacing: .02em; text-transform: uppercase; }
+  .box p:last-child, .box ul:last-child { margin-bottom: 0; }
+
+  .idea  { background: var(--accent-l); border-color: #c7cbf5; }
+  .idea .t { color: var(--accent); }
+  .try   { background: var(--good-l); border-color: #a7e8cf; }
+  .try .t { color: var(--good); }
+  .watch { background: var(--warn-l); border-color: #fcd9a8; }
+  .watch .t { color: var(--warn); }
+  .why   { background: var(--tint); border-color: var(--rule); }
+  .why .t { color: var(--ink-soft); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  th {
+    background: var(--ink);
+    color: #fff;
+    text-align: left;
+    padding: 7px 10px;
+    font-weight: 650;
+    font-size: 9pt;
+  }
+  td { padding: 6px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  tr:nth-child(even) td { background: #fafafd; }
+  td.c, th.c { text-align: center; }
+
+  figure { margin: 18px 0; text-align: center; page-break-inside: avoid; }
+  figcaption {
+    font-size: 8.8pt;
+    color: var(--ink-mute);
+    margin-top: 8px;
+    font-style: italic;
+    max-width: 85%;
+    margin-left: auto; margin-right: auto;
+    line-height: 1.5;
+  }
+  svg { max-width: 100%; height: auto; }
+
+  .cover {
+    height: 246mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    page-break-after: always;
+    text-align: left;
+  }
+  .cover .spectrum {
+    height: 12px;
+    border-radius: 6px;
+    margin-bottom: 34px;
+    background: linear-gradient(90deg,#e11d48,#f59e0b,#facc15,#22c55e,#06b6d4,#4338ca,#9333ea);
+  }
+  .cover h1 {
+    font-size: 38pt;
+    letter-spacing: -0.03em;
+    line-height: 1.06;
+    margin-bottom: 16px;
+  }
+  .cover .sub {
+    font-size: 14.5pt;
+    color: var(--ink-soft);
+    font-weight: 400;
+    margin-bottom: 40px;
+    line-height: 1.45;
+  }
+  .cover .meta {
+    font-size: 10pt;
+    color: var(--ink-mute);
+    border-top: 1px solid var(--rule);
+    padding-top: 16px;
+  }
+  .cover .promise {
+    background: var(--tint);
+    border-left: 4px solid var(--accent);
+    padding: 16px 20px;
+    border-radius: 5px;
+    margin-bottom: 30px;
+    font-size: 10.5pt;
+  }
+
+  .toc { page-break-after: always; }
+  .toc ol { list-style: none; padding: 0; counter-reset: toc; }
+  .toc li {
+    counter-increment: toc;
+    padding: 7px 0;
+    border-bottom: 1px dotted var(--rule);
+    font-size: 10.5pt;
+  }
+  .toc li::before {
+    content: counter(toc);
+    display: inline-block;
+    width: 26px;
+    color: var(--accent);
+    font-weight: 700;
+    font-family: "Cascadia Mono", Consolas, monospace;
+  }
+  .toc li .d { color: var(--ink-mute); font-size: 9.3pt; display: block; margin-left: 26px; }
+
+  .lead {
+    font-size: 11.5pt;
+    color: var(--ink-soft);
+    margin-bottom: 18px;
+    line-height: 1.6;
+  }
+
+  .newpage { page-break-before: always; }
+  .keep { page-break-inside: avoid; }
+
+  .kv { display: flex; gap: 14px; margin: 12px 0; page-break-inside: avoid; }
+  .kv > div { flex: 1; background: var(--tint); border-radius: 6px; padding: 11px 13px; border: 1px solid var(--rule); }
+  .kv .k { font-size: 8.5pt; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-mute); font-weight: 650; }
+  .kv .v { font-size: 14pt; font-weight: 700; color: var(--accent); font-family: "Cascadia Mono", Consolas, monospace; }
+  .kv .n { font-size: 9pt; color: var(--ink-soft); }
+
+  /* comparison columns */
+  .compare { display: flex; gap: 14px; margin: 14px 0; page-break-inside: avoid; }
+  .compare > div { flex: 1; border-radius: 7px; padding: 14px 16px; }
+  .compare .old { background: var(--bad-l); border: 1px solid #f7c9d1; }
+  .compare .new { background: var(--good-l); border: 1px solid #a7e8cf; }
+  .compare .label { font-size: 8.5pt; text-transform: uppercase; letter-spacing: .04em; font-weight: 700; margin-bottom: 8px; display: block; }
+  .compare .old .label { color: var(--bad); }
+  .compare .new .label { color: var(--good); }
+  .compare ul { padding-left: 18px; margin-bottom: 0; }
+  .compare li { margin-bottom: 5px; font-size: 9.6pt; }
+
+  /* mock app window */
+  .mockup {
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 14px 0;
+    page-break-inside: avoid;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  }
+  .mockup .bar {
+    background: #ebebf3;
+    padding: 7px 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .mockup .bar .dot { width: 7px; height: 7px; border-radius: 50%; background: #c7c7d6; }
+  .mockup .bar .title { margin-left: 8px; font-size: 8.3pt; color: var(--ink-mute); font-family: "Cascadia Mono", Consolas, monospace; }
+  .mockup .body { padding: 12px 16px; background: #fff; }
+  .mrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--rule);
+    font-size: 9.3pt;
+  }
+  .mrow:last-child { border-bottom: none; }
+  .mrow .pair { flex: 1.4; font-family: "Cascadia Mono", Consolas, monospace; font-size: 8.8pt; }
+  .mrow .num { flex: 0.9; text-align: right; font-family: "Cascadia Mono", Consolas, monospace; font-size: 8.8pt; color: var(--ink-soft); }
+  .tag {
+    font-size: 7.8pt;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    text-align: center;
+    min-width: 40px;
+  }
+  .tag.pass { background: var(--good-l); color: var(--good); }
+  .tag.fail { background: var(--bad-l); color: var(--bad); }
+
+  .swatch-row { display: flex; gap: 8px; margin: 14px 0; page-break-inside: avoid; }
+  .swatch-row > div {
+    flex: 1;
+    height: 58px;
+    border-radius: 6px;
+    border: 1px solid rgba(0,0,0,.14);
+    position: relative;
+    font-size: 8pt;
+    font-family: "Cascadia Mono", Consolas, monospace;
+  }
+  .swatch-row > div span {
+    position: absolute; bottom: 5px; left: 0; right: 0;
+    text-align: center;
+  }
+
+  .feat-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-size: 10pt;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .feature { display: flex; align-items: flex-start; margin: 13px 0; page-break-inside: avoid; }
+  .feature .txt { flex: 1; }
+  .feature h4 { margin: 2px 0 3px; font-size: 10.8pt; }
+</style>
+</head>
+<body>
+
+<!-- ============ COVER ============ -->
+<section class="cover">
+  <div class="spectrum"></div>
+  <h1>Rangoli: The Real Plan</h1>
+  <div class="sub">What we are actually building, how we know the numbers are right,<br>and how we host it without spending a rupee</div>
+
+  <div class="promise">
+    This picks up where the first plan and its companion math document left off. Those covered the deep
+    color science in full. This one is about three things that plan skipped: a sharper problem worth
+    solving, a way to prove the math is trustworthy instead of just hoping it is, and a hosting setup
+    that costs nothing to run, ever, no matter how many people use it.
+  </div>
+
+  <div class="meta">
+    Companion to <em>PLAN.md</em> and <em>The Math of Color, Explained Simply</em> &middot;
+    Product, accuracy, and hosting blueprint
+  </div>
+</section>
+
+<!-- ============ TOC ============ -->
+<section class="toc">
+  <h2 style="margin-top:0">What's inside</h2>
+  <ol>
+    <li>What changed, and why
+      <span class="d">A generator is not the product. A fix-it tool is.</span></li>
+    <li>The real problem
+      <span class="d">A scenario you have probably lived through, and why existing tools do not solve it</span></li>
+    <li>The product: nine features
+      <span class="d">Diagnose, repair, generate, and the seven things built around them</span></li>
+    <li>Making it accurate
+      <span class="d">Four separate checks, so "proven" actually means something</span></li>
+    <li>The architecture: it all runs in your browser
+      <span class="d">Why there is no server, and why that is a feature, not a shortcut</span></li>
+    <li>The hosting plan, step by step
+      <span class="d">What is free, what has a catch, and what you should double check yourself</span></li>
+    <li>Where Python still lives
+      <span class="d">The research pipeline is a different system with different needs</span></li>
+    <li>Build order
+      <span class="d">A shorter, sharper schedule than the first plan's</span></li>
+    <li>Honest risks
+      <span class="d">What could go wrong, and what to check before you rely on any of this</span></li>
+    <li>Names, and the plan in six lines
+      <span class="d">A short close</span></li>
+  </ol>
+</section>
+
+<!-- ============ 1 ============ -->
+<h2><span class="num">1</span>What changed, and why</h2>
+
+<p class="lead">Two things pushed a real rethink here, not a cosmetic one. Read the whole section
+before jumping to the features, because it explains why the rest of this document looks different
+from the first plan.</p>
+
+<p>The first plan treated the project as an image to palette generator with accessibility bolted on
+as a check afterward. That is a fine student exercise, but it walks straight into a crowded market.
+Coolors, Khroma, and Adobe Color already generate pretty palettes from an image or a mood, and they
+do it well. Being one more tool that turns a photo into five hex codes does not give anyone a reason
+to switch.</p>
+
+<p>So the question worth asking is not "how do we generate colors." It is "what do people who already
+have colors actually struggle with." That turned out to have a much better answer, and it is the
+subject of section 2.</p>
+
+<p>The second push was purely practical. You cannot pay for Vercel's paid tiers or Render's paid
+tiers, and that is a completely reasonable constraint, not a limitation to work around quietly. Once
+you take it seriously, it forces a genuinely better architecture: instead of a Python server doing
+the heavy math and a database remembering things, the entire engine moves into the visitor's own
+browser. Nobody has to keep a server running, which means nobody has to pay for one, no matter how
+many people use the tool. Section 5 and 6 walk through exactly how that works and where it gets
+hosted for free.</p>
+
+<div class="compare">
+  <div class="old">
+    <span class="label">The old pitch</span>
+    <ul>
+      <li>Upload an image, get five pretty colors</li>
+      <li>Accessibility checked after the fact, as a warning</li>
+      <li>Needs a Python server and a database to run live</li>
+      <li>Competes directly with Coolors and Adobe Color</li>
+    </ul>
+  </div>
+  <div class="new">
+    <span class="label">The real plan</span>
+    <ul>
+      <li>You already have colors. We tell you if they work, and fix them if they do not</li>
+      <li>Accessibility is a hard rule the math has to satisfy, not a lint warning</li>
+      <li>Runs entirely in the browser, ships as static files, costs nothing to host</li>
+      <li>A different category: a checker and repair tool, not another generator</li>
+    </ul>
+  </div>
+</div>
+
+<p>The good news is that almost nothing from the earlier math work gets thrown away. Every formula in
+the companion math document (the sRGB to Lab pipeline, delta E, k means and k medoids, WCAG, APCA)
+is still exactly the engine underneath. What changes is what we build around it and where it runs.</p>
+
+<!-- ============ 2 ============ -->
+<h2><span class="num">2</span>The real problem</h2>
+
+<p class="lead">Here is a scenario that is easy to picture, because it happens constantly to exactly
+the kind of person who would use this tool.</p>
+
+<p>You are building a small product. At some point, someone (maybe you, maybe a designer, maybe a
+client who sent over an old brand guideline) picked three or four colors. Not from a formula, from a
+logo, or a gut feeling, or whatever looked good in Figma at eleven at night. You built the interface
+around them. Weeks later, someone runs an accessibility audit, or a screen reader user reports they
+cannot read your button labels, or Lighthouse flags four color pairs as failing contrast.</p>
+
+<p>Now you open the design file and start nudging hex values one at a time. You darken the text color
+to fix the contrast against the background. That breaks the contrast against a card surface that used
+to be fine. You lighten the card surface. Now the primary button, which used to stand out against
+that surface, blends in. This can eat an entire afternoon, and at the end you are not even sure you
+have not broken something else you have not tested yet.</p>
+
+<p>That loop is the actual problem. Not "I have no colors and want some," but "I have colors, and
+fixing one thing keeps breaking another thing, and I have no way to know if there even is a version
+of these colors that satisfies everything at once." Nobody currently answers that question directly.</p>
+
+<h3>Why existing tools do not solve this</h3>
+
+<table>
+  <tr><th>Tool</th><th>What it is good at</th><th>What it does not do</th></tr>
+  <tr>
+    <td><strong>Coolors, Adobe Color</strong></td>
+    <td>Generating new palettes from a mood, an image, or a color wheel rule</td>
+    <td>Does not take your existing colors and prove a fix, does not treat contrast as a rule the
+        output must obey</td>
+  </tr>
+  <tr>
+    <td><strong>WebAIM, standalone contrast checkers</strong></td>
+    <td>Checking one pair of colors at a time against WCAG</td>
+    <td>Only one pair at a time, no idea how changing one color affects the other five roles it
+        also touches, no repair suggestion beyond "try again"</td>
+  </tr>
+  <tr>
+    <td><strong>Tailwind or shadcn color scales</strong></td>
+    <td>A consistent set of tints and shades once you already have a base hue</td>
+    <td>The scale itself is not checked against your actual text and background pairings, and
+        nothing stops you from picking two shades that fail together</td>
+  </tr>
+  <tr>
+    <td><strong>Figma contrast plugins</strong></td>
+    <td>Flagging a failing pair while you design</td>
+    <td>Flags one pair at a time, same as above, and gives no guarantee that a fix for one pair
+        will not break another</td>
+  </tr>
+</table>
+
+<p>What is missing everywhere is the idea from the math document's later sections: a real interface
+is not five swatches, it is colors assigned to jobs (background, text, a button and its label, a
+danger color) with rules between the jobs, and every rule has to hold at the same time. That is a
+small constraint puzzle, and nobody is currently solving it as a puzzle. Most tools check pairs one
+at a time and hope the fixes do not fight each other.</p>
+
+<div class="box idea">
+  <span class="t">The one sentence version</span>
+  <p>Rangoli is not a color generator with an accessibility checkbox. It is an accessibility solver
+  that happens to also be able to generate colors, starting from the colors you already have, whether
+  that is a hex code, a screenshot, or a photo, and it tells you exactly what is wrong and the
+  smallest change that fixes everything at once, with the math to back it up.</p>
+</div>
+
+<h3>Who actually wants this</h3>
+
+<p>Freelance designers and small teams without a dedicated design system person, since that is exactly
+the gap between "picked colors that look nice" and "colors that survive an audit." Indie developers
+using Tailwind or shadcn who chose a brand color and never checked whether their whole token set
+holds together. And, quietly, anyone who has to justify a color choice to a client or a legal
+requirement and wants a number, not an opinion.</p>
+
+<!-- ============ 3 ============ -->
+<h2><span class="num">3</span>The product: nine features</h2>
+
+<p class="lead">Everything below runs on the same engine described in the math document. Here is
+what it actually looks like as something a person clicks around in.</p>
+
+<div class="feature">
+  <span class="feat-num">1</span>
+  <div class="txt">
+    <h4>Diagnose</h4>
+    <p>Paste in your existing hex codes, or drop in a screenshot of your app. Rangoli finds every
+    pairing that actually matters (body text on the background, text on a card, a button label on
+    its own fill, a danger color against the page) and shows both the WCAG ratio and the newer APCA
+    number for each one, side by side, with the exact margin by which it passes or fails, not just a
+    checkmark.</p>
+  </div>
+</div>
+
+<div class="mockup keep">
+  <div class="bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="title">rangoli &middot; diagnose</div></div>
+  <div class="body">
+    <div class="mrow"><div class="pair">text on bg</div><div class="num">WCAG 3.9:1</div><div class="num">APCA 61</div><span class="tag fail">FAIL</span></div>
+    <div class="mrow"><div class="pair">text on surface</div><div class="num">WCAG 4.7:1</div><div class="num">APCA 76</div><span class="tag pass">PASS</span></div>
+    <div class="mrow"><div class="pair">onPrimary on primary</div><div class="num">WCAG 3.1:1</div><div class="num">APCA 58</div><span class="tag fail">FAIL</span></div>
+    <div class="mrow"><div class="pair">border on bg</div><div class="num">WCAG 1.4:1</div><div class="num">APCA 12</div><span class="tag fail">FAIL</span></div>
+    <div class="mrow"><div class="pair">danger on bg</div><div class="num">WCAG 5.2:1</div><div class="num">APCA 79</div><span class="tag pass">PASS</span></div>
+  </div>
+</div>
+
+<div class="feature">
+  <span class="feat-num">2</span>
+  <div class="txt">
+    <h4>Repair</h4>
+    <p>One click solves for the smallest possible change across every failing pair at once, using the
+    exact constraint solve described in the math document. Not "here is a whole new palette," but
+    "here is your palette, nudged as little as mathematically possible, with everything now passing."
+    You see a before and after strip and the exact perceptual distance each color moved, so the fix
+    is never a mystery.</p>
+  </div>
+</div>
+
+<div class="swatch-row keep">
+  <div style="background:#8b93f0;color:#000"><span>text: before</span></div>
+  <div style="background:#5b63c9;color:#fff"><span>text: after (moved 6.1)</span></div>
+  <div style="background:#f4f4fb;color:#000"><span>bg: unchanged</span></div>
+  <div style="background:#4338ca;color:#fff"><span>primary: unchanged</span></div>
+  <div style="background:#f2f0ff;color:#000"><span>onPrimary: before</span></div>
+  <div style="background:#ffffff;color:#000;border:1px solid #ccc"><span>onPrimary: after (moved 3.4)</span></div>
+</div>
+
+<div class="feature">
+  <span class="feat-num">3</span>
+  <div class="txt">
+    <h4>Generate</h4>
+    <p>For when you genuinely do not have a starting point yet. Upload a photo, a logo, or any
+    inspiration image, and Rangoli finds the real dominant colors (the histogram and k medoids
+    approach from the math document, so a small brand color is not lost the way random sampling would
+    lose it) and assigns them to roles automatically. Accessible from the moment it is generated,
+    not checked afterward.</p>
+  </div>
+</div>
+
+<div class="feature">
+  <span class="feat-num">4</span>
+  <div class="txt">
+    <h4>Dark mode twin</h4>
+    <p>Give it a light palette, get back a dark one that keeps the same hues, so it still reads as
+    your brand, but satisfies contrast in the flipped polarity. This is a genuinely different
+    calculation from just inverting lightness, which is exactly why APCA treats light on dark and dark
+    on light as separate formulas in the first place.</p>
+  </div>
+</div>
+
+<div class="feature">
+  <span class="feat-num">5</span>
+  <div class="txt">
+    <h4>Color blindness check</h4>
+    <p>Simulates the common forms of color vision deficiency and flags any two roles, like your
+    primary and danger buttons, that stop being distinguishable once simulated. Roughly one in
+    twelve men has some form of red green color blindness, and almost no palette tool checks for it
+    by default.</p>
+  </div>
+</div>
+
+<div class="feature">
+  <span class="feat-num">6</span>
+  <div class="txt">
+    <h4>Export, in a format you can actually use</h4>
+    <p>One click to CSS custom properties, a Tailwind config block, or a W3C design tokens JSON file.
+    Not a screenshot of a palette you have to retype, something you paste straight into a real
+    project.</p>
+  </div>
+</div>
+
+<div class="feature">
+  <span class="feat-num">7</span>
+  <div class="txt">
+    <h4>A command line check for continuous integration</h4>
+    <p>The same engine, packaged as a small command line tool and a matching GitHub Action, so a team
+    can fail a pull request automatically the moment someone introduces a color pair that cannot be
+    read. This is the feature most likely to make Rangoli part of someone's actual workflow instead
+    of a tool they open once.</p>
+  </div>
+</div>
+
+<div class="formula keep">$ rangoli check ./tokens.json
+
+<span class="fail">FAIL</span>  text on bg              APCA 61   (needs 75)
+<span class="fail">FAIL</span>  onPrimary on primary    APCA 58   (needs 75)
+<span class="pass">PASS</span>  text on surface         APCA 76   (needs 75)
+
+2 pairs failing. Run "rangoli fix ./tokens.json" to resolve.
+exit code 1</div>
+
+<div class="feature">
+  <span class="feat-num">8</span>
+  <div class="txt">
+    <h4>See the geometry</h4>
+    <p>An optional 3D view of your own colors as points in the perceptual space the math actually
+    uses, the same idea as the diagrams in the companion math document, but built from your palette
+    instead of an example. Nice for anyone curious, and genuinely useful in a classroom or a
+    portfolio walkthrough.</p>
+  </div>
+</div>
+
+<div class="feature">
+  <span class="feat-num">9</span>
+  <div class="txt">
+    <h4>Share without an account</h4>
+    <p>The whole palette and its role assignments get packed into the link itself, so anyone can send
+    a result to someone else without either of you signing up for anything, and without us storing a
+    single color anyone has ever typed in. This is a small trick, not a database, and it is enough.</p>
+  </div>
+</div>
+
+<div class="box why">
+  <span class="t">Why generation is feature three, not feature one</span>
+  <p>It would have been easy to lead with "upload an image, get a palette," because it is the most
+  visually impressive demo. But it is also the feature every competitor already has. Leading with
+  diagnose and repair means the first thing a visitor sees is Rangoli doing something nobody else
+  does: taking colors that already exist and proving, with numbers, exactly what is wrong and the
+  smallest way to fix it.</p>
+</div>
+
+<!-- ============ 4 ============ -->
+<h2><span class="num">4</span>Making it accurate</h2>
+
+<p class="lead">A tool that claims to "prove" a palette is accessible only means something if the
+numbers behind that proof are actually correct. Here are the four separate checks this project
+leans on, instead of just trusting a formula because it looks right.</p>
+
+<h3>1. Every formula checked against a published reference</h3>
+
+<p>The math document already flagged this as the single highest risk in the whole project: a
+transposed digit in a constant produces numbers that look completely plausible and are quietly
+wrong, all the way through to the final palette. The fix is boring and non negotiable. Delta E 00 gets
+checked against Sharma's published set of test pairs, the ones specifically built to exercise every
+branch of the formula, including the awkward blue region. APCA gets checked against the public
+reference calculator. Oklab gets checked against the original author's own published constants. sRGB
+round trips get checked by converting thousands of random colors there and back and confirming
+nothing drifts. All of this runs automatically every time the code changes, not just once by hand
+at the start.</p>
+
+<h3>2. Two independent implementations, forced to agree</h3>
+
+<p>Because the live tool needs a fast version of this math written in JavaScript, and the research
+side of the project needs the same math written in Python, there is a genuine opportunity here rather
+than just duplicated work. Both versions get run against the same large batch of random test cases,
+and the build fails if they ever disagree by more than a tiny tolerance. Two independently written
+implementations landing on the same answer is a much stronger signal that the math is right than
+trusting either one alone, and this comes essentially for free once both versions exist anyway.</p>
+
+<h3>3. Real human taste, not just a clustering score</h3>
+
+<p>Whether a generated palette actually looks good to a person is a different question from whether
+it is mathematically tidy, and low clustering error does not automatically mean a palette looks
+harmonious. Rather than assume the math is right, generated palettes get scored against two published
+datasets built specifically from real palettes that real people rated for quality (one from a large
+study of designer chosen color themes, another from a study of how people extract color themes from
+photographs). That gives an actual number for "does this look like something a person would choose,"
+instead of a hopeful assumption.</p>
+
+<h3>4. Both accessibility standards, reported honestly</h3>
+
+<p>APCA is the more accurate model of how people actually read text, and the math document explains
+why in detail. But WCAG 2.x is still what most current laws, procurement requirements, and automated
+audits actually check for today. A tool that only shows the newer, better number is not more honest,
+it is less useful to someone who has to pass a specific audit that still cites the old one. Rangoli
+shows both numbers side by side, every time, rather than picking a favorite and hiding the other.</p>
+
+<div class="box try">
+  <span class="t">Two smaller checks worth mentioning</span>
+  <p><strong>Repaired colors should still look intentional.</strong> A naive fix that just clamps
+  numbers can shift a saturated blue toward purple, which looks like a bug even when the contrast
+  math is correct. Repairs move through the same careful gamut mapping described in the math
+  document, so a fixed color still looks like a deliberate design choice.</p>
+  <p><strong>The same input always gives the same output.</strong> The clustering and the solver are
+  both run with a fixed, seeded starting point, so uploading the same image twice gives you the same
+  palette twice. If "proof" is going to mean anything, the tool has to be boring and repeatable, not
+  a little different every time you run it.</p>
+</div>
+
+<!-- ============ 5 ============ -->
+<h2><span class="num">5</span>The architecture: it all runs in your browser</h2>
+
+<p class="lead">This is the piece that actually solves the hosting problem, not a workaround for it.
+It turns out the honest answer to "we cannot pay for servers" is not "find a cheaper server," it is
+"do we need a server at all." For this particular tool, once you apply the binning trick from the
+math document, the answer is no.</p>
+
+<p>Remember the performance numbers from the earlier plan: after binning an image down from a couple
+million pixels to a few thousand occupied buckets in perceptual space, the entire pipeline (decoding
+the image, converting to Lab, clustering, and solving the small constraint puzzle) runs in well under
+half a second. That is well within what an ordinary laptop, and even most phones, can do without
+breaking a sweat. There is simply not enough work here to justify a server.</p>
+
+<p>So the whole engine moves client side. Here is the actual pipeline, running entirely inside the
+visitor's own browser tab:</p>
+
+<figure>
+<svg viewBox="0 0 560 320" width="560">
+  <g font-family="Segoe UI">
+  <!-- outer browser box -->
+  <rect x="14" y="14" width="360" height="270" rx="10" fill="#fbfbfe" stroke="#4338ca" stroke-width="1.6"/>
+  <rect x="14" y="14" width="360" height="26" rx="10" fill="#4338ca"/>
+  <rect x="14" y="28" width="360" height="12" fill="#4338ca"/>
+  <circle cx="30" cy="27" r="3.4" fill="#fff" opacity=".85"/>
+  <circle cx="41" cy="27" r="3.4" fill="#fff" opacity=".85"/>
+  <circle cx="52" cy="27" r="3.4" fill="#fff" opacity=".85"/>
+  <text x="374" y="31" font-size="9.5" fill="#fff" font-weight="700" text-anchor="end">the visitor's browser tab</text>
+
+  <!-- step boxes -->
+  <rect x="32" y="54" width="150" height="46" rx="6" fill="#eef0ff" stroke="#c7cbf5"/>
+  <text x="107" y="72" font-size="9" text-anchor="middle" font-weight="700" fill="#1a1a2e">1. Read image or hex codes</text>
+  <text x="107" y="85" font-size="8" text-anchor="middle" fill="#6e6e85">the browser's own decoder</text>
+  <text x="107" y="95" font-size="8" text-anchor="middle" fill="#6e6e85">nothing is uploaded anywhere</text>
+
+  <rect x="202" y="54" width="150" height="46" rx="6" fill="#eef0ff" stroke="#c7cbf5"/>
+  <text x="277" y="72" font-size="9" text-anchor="middle" font-weight="700" fill="#1a1a2e">2. Resize, convert to Lab</text>
+  <text x="277" y="85" font-size="8" text-anchor="middle" fill="#6e6e85">linear light, as in the</text>
+  <text x="277" y="95" font-size="8" text-anchor="middle" fill="#6e6e85">math document, section 5</text>
+
+  <rect x="32" y="118" width="150" height="46" rx="6" fill="#eef0ff" stroke="#c7cbf5"/>
+  <text x="107" y="136" font-size="9" text-anchor="middle" font-weight="700" fill="#1a1a2e">3. Bin, then k-medoids</text>
+  <text x="107" y="149" font-size="8" text-anchor="middle" fill="#6e6e85">a few thousand points,</text>
+  <text x="107" y="159" font-size="8" text-anchor="middle" fill="#6e6e85">not a few million</text>
+
+  <rect x="202" y="118" width="150" height="46" rx="6" fill="#eef0ff" stroke="#c7cbf5"/>
+  <text x="277" y="136" font-size="9" text-anchor="middle" font-weight="700" fill="#1a1a2e">4. Solve the role graph</text>
+  <text x="277" y="149" font-size="8" text-anchor="middle" fill="#6e6e85">a small solver we write</text>
+  <text x="277" y="159" font-size="8" text-anchor="middle" fill="#6e6e85">ourselves, checked against OR-Tools</text>
+
+  <rect x="117" y="184" width="150" height="46" rx="6" fill="#ecfdf5" stroke="#a7e8cf"/>
+  <text x="192" y="202" font-size="9" text-anchor="middle" font-weight="700" fill="#047857">5. Show the result</text>
+  <text x="192" y="215" font-size="8" text-anchor="middle" fill="#4a4a63">diagnose matrix, repair diff,</text>
+  <text x="192" y="225" font-size="8" text-anchor="middle" fill="#4a4a63">the 3D view, export buttons</text>
+
+  <text x="192" y="252" font-size="8.3" text-anchor="middle" fill="#6e6e85" font-style="italic">steps 2 to 4 run in a background</text>
+  <text x="192" y="263" font-size="8.3" text-anchor="middle" fill="#6e6e85" font-style="italic">thread, so the page never freezes</text>
+
+  <!-- arrows -->
+  <path d="M182,77 h20 m-6,-5 l6,5 l-6,5" stroke="#4338ca" stroke-width="1.6" fill="none"/>
+  <path d="M107,100 v18 m-5,-6 l5,6 l5,-6" stroke="#4338ca" stroke-width="1.6" fill="none"/>
+  <path d="M277,100 v18 m-5,-6 l5,6 l5,-6" stroke="#4338ca" stroke-width="1.6" fill="none"/>
+  <path d="M182,141 h20 m-6,-5 l6,5 l-6,5" stroke="#4338ca" stroke-width="1.6" fill="none"/>
+  <path d="M170,164 l30,20 m-8,-3 l8,3 l1,-8" stroke="#4338ca" stroke-width="1.6" fill="none"/>
+  <path d="M267,164 l-30,20 m8,-3 l-8,3 l-1,-8" stroke="#4338ca" stroke-width="1.6" fill="none"/>
+
+  <!-- host box -->
+  <rect x="392" y="54" width="150" height="40" rx="6" fill="#f6f6fb" stroke="#8a8aa0" stroke-dasharray="4,3"/>
+  <text x="467" y="72" font-size="8.6" text-anchor="middle" font-weight="700" fill="#4a4a63">a plain static file host</text>
+  <text x="467" y="84" font-size="7.8" text-anchor="middle" fill="#6e6e85">just serves the page once</text>
+  <path d="M374,74 h14 m-5,-4 l5,4 l-5,4" stroke="#8a8aa0" stroke-width="1.4" fill="none"/>
+
+  <!-- research box -->
+  <rect x="392" y="150" width="150" height="90" rx="6" fill="#fff7ed" stroke="#fcd9a8"/>
+  <text x="467" y="168" font-size="8.6" text-anchor="middle" font-weight="700" fill="#b45309">the research pipeline</text>
+  <text x="467" y="181" font-size="7.6" text-anchor="middle" fill="#6e6e85">Python, colour-science,</text>
+  <text x="467" y="191" font-size="7.6" text-anchor="middle" fill="#6e6e85">OR-Tools, full accuracy</text>
+  <text x="467" y="205" font-size="7.6" text-anchor="middle" fill="#6e6e85">runs on a laptop or in</text>
+  <text x="467" y="215" font-size="7.6" text-anchor="middle" fill="#6e6e85">GitHub Actions, for free</text>
+  <text x="467" y="229" font-size="7.6" text-anchor="middle" fill="#6e6e85" font-style="italic">feeds the paper, not the site</text>
+
+  <path d="M352,150 C400,160 420,170 392,185" stroke="#b45309" stroke-width="1.2" fill="none" stroke-dasharray="3,2"/>
+  <text x="352" y="140" font-size="7.4" fill="#b45309" font-style="italic">checked against, not</text>
+  <text x="352" y="150" font-size="7.4" fill="#b45309" font-style="italic">served by, one another</text>
+  </g>
+</svg>
+<figcaption>Nothing about your image or your colors ever leaves your device. The static host on the
+right only ever hands out the same unchanging set of files, no matter how many people show up, which
+is exactly why it costs nothing to run at any scale a student project is likely to see.</figcaption>
+</figure>
+
+<p>Two details worth calling out. First, the small constraint solver that picks colors for the role
+graph does not need an industrial strength solver like OR-Tools, because the puzzle itself is small,
+a handful of roles and a few hundred candidates each. A simple solver written by hand, one that first
+narrows down the possibilities using the rules between roles and then searches what is left, handles
+this easily. The important part is that this hand written solver gets checked, on a large batch of
+test cases, against the same OR-Tools solver used in the research pipeline, so we know the shortcut
+version is not quietly wrong.</p>
+
+<p>Second, this also happens to be a better product, not just a cheaper one. Nothing gets uploaded to
+a server, so there is no privacy question to answer about what happens to someone's screenshot or
+brand colors. There is no cold start delay from a sleeping free tier server waking up. And it works
+the same for one visitor as it does for ten thousand, because a file server genuinely does not care
+how much math a visitor's own browser chooses to do after downloading the page.</p>
+
+<!-- ============ 6 ============ -->
+<h2><span class="num">6</span>The hosting plan, step by step</h2>
+
+<p class="lead">Since the whole product builds down to a folder of ordinary files (HTML, JavaScript,
+CSS, maybe a small WebAssembly file later if it is ever needed), hosting it is genuinely simple.
+Here is the concrete plan, in order.</p>
+
+<h3>The live product</h3>
+
+<table>
+  <tr><th>Where</th><th>Cost</th><th>Why this one</th></tr>
+  <tr>
+    <td><strong>Cloudflare Pages</strong> (main recommendation)</td>
+    <td>Free</td>
+    <td>Historically a very generous free tier for static sites, no card required to start, a free
+        subdomain immediately, automatic deploys straight from a GitHub push, and basic visit counts
+        included so there is no need for a separate analytics tool.</td>
+  </tr>
+  <tr>
+    <td><strong>GitHub Pages</strong> (simplest fallback)</td>
+    <td>Free</td>
+    <td>The code already needs to live in a public GitHub repository anyway, for the paper's
+        reproducibility requirement. Turning that same repository into a website costs nothing extra
+        and takes a few minutes.</td>
+  </tr>
+  <tr>
+    <td><strong>Vercel Hobby tier</strong> (also fine)</td>
+    <td>Free</td>
+    <td>Not a paid plan, this is worth clarifying since it is easy to assume otherwise. It is free
+        for personal projects, though the terms are written for individual, non commercial use, so
+        Cloudflare Pages or GitHub Pages are the cleaner first choice.</td>
+  </tr>
+</table>
+
+<h3>If you later want saved palettes or a gallery</h3>
+
+<p>You do not need this for the core product, since sharing already works through the link itself,
+described back in feature nine. But if a later version wants an actual saved gallery with accounts,
+<strong>Supabase's free tier</strong> gives a real database and a login system without writing a
+backend server. The one thing worth knowing up front: free Supabase projects go to sleep after
+roughly a week without any traffic and need a manual nudge to wake back up. That is a fine tradeoff
+for a student project that is not yet getting daily visitors, just not something to build a paid
+customer's expectations around.</p>
+
+<h3>What is not free, and does not need to be</h3>
+
+<p>A custom domain, something like a made up rangoli dot design instead of a free subdomain, is
+usually somewhere between ten and forty dollars a year depending on the ending of the domain name.
+It is the one genuinely optional cost in this entire plan, and nothing about the product needs it to
+work. The free subdomain that Cloudflare Pages or GitHub Pages hands out is a completely real,
+completely working website.</p>
+
+<div class="box watch">
+  <span class="t">Check the current terms yourself before relying on any of this</span>
+  <p>Free tiers change their limits and their rules over time, sometimes without much warning. The
+  figures above reflect how these services have generally behaved, but five minutes spent reading a
+  provider's current pricing page before you commit to it is five minutes well spent. Do not build a
+  launch plan around a specific number from this document without checking it is still true.</p>
+</div>
+
+<div class="kv">
+  <div><div class="k">Monthly cost, live product</div><div class="v">$0</div><div class="n">at any traffic level a student project realistically sees</div></div>
+  <div><div class="k">Card required to start</div><div class="v">No</div><div class="n">for Cloudflare Pages or GitHub Pages</div></div>
+</div>
+
+<!-- ============ 7 ============ -->
+<h2><span class="num">7</span>Where Python still lives</h2>
+
+<p class="lead">Moving the live product into the browser does not mean Python disappears from this
+project. It means Python has one job now, not two, and that job never needs a server.</p>
+
+<p>The live tool people click around in their browser is JavaScript, and needs nothing running behind
+it. But the research side of this project, the parts described in the earlier plan under evaluation
+and ablation, still make the most sense in Python. The full sweep across five hundred or more images.
+The comparison tables across every combination of color space and clustering algorithm. The
+industrial strength OR-Tools solver, used specifically to double check the small hand written solver
+that ships in the browser. All of that is offline work that produces a folder of numbers, charts, and
+tables that go straight into the paper. None of it needs to be reachable by anyone over the internet
+while it runs.</p>
+
+<p>It runs on the student's own laptop, or for free inside GitHub's own automated testing service,
+which gives a generous amount of free run time every month for exactly this kind of job, more for
+public repositories than private ones. Either way, nobody has to keep a Python process alive
+somewhere and pay for the privilege. The research pipeline and the live product are two different
+systems, built for two different audiences, and treating them that way is what makes the whole thing
+affordable.</p>
+
+<!-- ============ 8 ============ -->
+<h2><span class="num">8</span>Build order</h2>
+
+<p class="lead">Shorter than the twenty six week plan from before, because a good chunk of that plan
+was about running a server that no longer needs to exist. The math work carries over unchanged.</p>
+
+<table>
+  <tr><th style="width:80px">When</th><th>Focus</th><th>What ships</th></tr>
+  <tr>
+    <td>Weeks 1 to 2</td>
+    <td>The math core, twice</td>
+    <td>The color math from the companion document, written in TypeScript for the browser and in
+        Python for the research side, both checked from day one against the same reference test
+        values described in section 4.</td>
+  </tr>
+  <tr>
+    <td>Weeks 3 to 4</td>
+    <td>Diagnose and repair</td>
+    <td>The two headline features, working end to end as a static site, deployed to Cloudflare Pages
+        immediately, even while it still looks rough. Getting something live early matters more than
+        getting it polished early.</td>
+  </tr>
+  <tr>
+    <td>Weeks 5 to 6</td>
+    <td>Generate from an image</td>
+    <td>The binning, weighted k-medoids, and the small role graph solver, all running in a background
+        thread so the page stays responsive.</td>
+  </tr>
+  <tr>
+    <td>Weeks 7 to 8</td>
+    <td>Dark mode, color blindness check, exports</td>
+    <td>The three features that make Rangoli useful inside a real project, not just a demo.</td>
+  </tr>
+  <tr>
+    <td>Weeks 9 to 10</td>
+    <td>The command line tool, the 3D view, share links, polish</td>
+    <td>The continuous integration story, the geometry view from the math document, and a pass over
+        rough edges before pointing anyone at it.</td>
+  </tr>
+  <tr>
+    <td>Week 11 onward</td>
+    <td>The research sweep and the paper</td>
+    <td>Runs entirely separately, on a laptop and in GitHub Actions, following the evaluation plan
+        laid out in the original document.</td>
+  </tr>
+</table>
+
+<!-- ============ 9 ============ -->
+<h2><span class="num">9</span>Honest risks</h2>
+
+<ul>
+  <li><strong>Free tier terms drift over time.</strong> Section 6 already says this, and it is worth
+      repeating here as a standing habit, not a one time check: read the current pricing page before
+      leaning on any specific limit.</li>
+  <li><strong>Old devices will be slower than a new laptop.</strong> The math is light enough for
+      almost anything modern, but a very old phone doing the full image pipeline might take a few
+      seconds instead of a fraction of one. A visible progress indicator and a sensible cap on how
+      large an uploaded image gets before processing handles this honestly, rather than pretending
+      everything is instant everywhere.</li>
+  <li><strong>The hand written solver is the one place a quiet bug could hide.</strong> Because it
+      replaces an industrial strength tool with something built from scratch for speed, it genuinely
+      needs the differential testing described in section 4, run on a large batch of cases, not just
+      a few hand checked examples. This is not optional polish, it is the one part of the accuracy
+      story that has not already been proven by someone else's published work.</li>
+  <li><strong>Popularity is a good problem, not a blocker.</strong> If Rangoli ever gets popular
+      enough that a static site is not enough on its own, for instance a gallery with real accounts
+      and heavy write traffic, that is a genuinely nice problem to have, and nothing in this plan
+      prevents adding a real backend later. It simply is not needed to launch, and should not be
+      built before it is needed.</li>
+</ul>
+
+<!-- ============ 10 ============ -->
+<h2><span class="num">10</span>Names, and the plan in six lines</h2>
+
+<p>The names from the first plan still stand. <strong>Rangoli</strong> is the product, the art of
+geometric patterns made from colored powder, which is exactly what this tool does with a design
+system. <strong>ACCORD</strong> is the name for the underlying method when it is written up as a
+paper, accessibility constrained clustering for optimal role design, and it also just means harmony,
+which is a nice coincidence for a tool whose whole job is making colors agree with each other.</p>
+
+<p>If a short line under the logo is ever needed, something honest and plain works better than
+anything clever: <strong>your colors, proven readable.</strong></p>
+
+<div class="box idea" style="margin-top:22px">
+  <span class="t">The whole document in six lines</span>
+  <p><strong>1.</strong> The real problem is not generating colors, it is fixing colors people
+  already have without breaking something else in the process.<br>
+  <strong>2.</strong> Diagnose and repair come first. Generation is built on the same engine, but it
+  is not the reason to visit.<br>
+  <strong>3.</strong> Accuracy comes from checking every formula against a published reference, from
+  two independent implementations agreeing, from real human rated data, and from reporting both
+  accessibility standards honestly.<br>
+  <strong>4.</strong> The entire engine runs inside the visitor's own browser, which is what actually
+  solves the hosting problem, not a cheaper server.<br>
+  <strong>5.</strong> Hosting is a plain static file host, genuinely free, no card required, at any
+  traffic level this project is likely to see.<br>
+  <strong>6.</strong> Python keeps exactly one job, the offline research pipeline that feeds the
+  paper, and it never needs a server either.</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.hypothesis/
+*.egg-info/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+frontend/.env*.local
+
+# Env / secrets
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Local AI-assistant instructions and planning docs -- kept on disk for
+# local use, never pushed, never part of any commit
+/CLAUDE.md
+/.claude/
+/AGENT.md
+/PLAN.md
