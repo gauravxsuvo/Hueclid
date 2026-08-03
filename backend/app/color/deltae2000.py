@@ -4,6 +4,7 @@ Reference: PLAN.md section 2.3; Sharma, Wu & Dalal (2005). This is a
 dissimilarity, not a metric (violates the triangle inequality via the
 R_T rotation term) -- do not assume it behaves like Euclidean distance.
 """
+
 from __future__ import annotations
 
 import numpy as np

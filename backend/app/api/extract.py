@@ -1,4 +1,5 @@
 """POST /api/v1/extract -- image in, ranked palette out."""
+
 from __future__ import annotations
 
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile

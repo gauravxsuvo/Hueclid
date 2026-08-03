@@ -4,6 +4,7 @@ This is the Euclidean-in-Lab arm, not the dE00 k-medoids method (PLAN.md
 2.4a, phase weeks 7-9). It exists so the API has a real, working endpoint
 from week 1 while the perceptually-correct clustering is still being built.
 """
+
 from __future__ import annotations
 
 import io

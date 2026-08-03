@@ -3,6 +3,7 @@
 Reference: PLAN.md section 2.1. D65 white point, sRGB primaries.
 All functions accept and return float64 ndarrays of shape (..., 3).
 """
+
 from __future__ import annotations
 
 import numpy as np

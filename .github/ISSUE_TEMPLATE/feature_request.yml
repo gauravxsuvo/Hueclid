@@ -1,0 +1,31 @@
+name: Feature request
+description: Propose something new, or a change to how something currently works.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This project is still early and the roadmap is actively being figured out, so this is a great place to propose direction before writing code. See CONTRIBUTING.md for context on what's already planned.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: What's missing or awkward right now?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any other approaches you thought about, and why you didn't pick them.
+    validations:
+      required: false

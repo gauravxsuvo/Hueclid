@@ -2,6 +2,7 @@
 
 PLAN.md 9.1: round-trip 10,000 random sRGB triples, max dE00 < 1e-6.
 """
+
 from __future__ import annotations
 
 import numpy as np

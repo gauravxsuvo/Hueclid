@@ -1,4 +1,5 @@
 """API-level smoke tests for POST /api/v1/extract and GET /health."""
+
 from __future__ import annotations
 
 import io

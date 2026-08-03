@@ -1,0 +1,15 @@
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI's dependency-injection idiom relies on File()/Query()/Depends() as
+# default argument values -- that's the pattern, not a bug (B008).
+extend-immutable-calls = ["fastapi.Depends", "fastapi.File", "fastapi.Query"]

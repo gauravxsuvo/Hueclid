@@ -3,6 +3,9 @@
   <img src="brand/banner-wide.svg" alt="Hueclid">
 </picture>
 
+[![CI](https://github.com/gauravxsuvo/Hueclid/actions/workflows/ci.yml/badge.svg)](https://github.com/gauravxsuvo/Hueclid/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 Hueclid generates accessible color palettes from images. Give it a screenshot or a photo and it produces a set of colors that actually work as a UI design system: a background, a surface color, text colors, a primary action color, a danger color, and so on, all checked against each other for contrast, not just checked one at a time against a neutral background.
 
 ## The idea
@@ -23,7 +26,7 @@ This is an early-stage project, built openly and in phases rather than all at on
 - A working API (FastAPI) and a working web page (Next.js) exist, and have been tested together end to end: upload an image, get back a ranked, weighted palette.
 - Not deployed publicly. That's deliberate for now: the project runs and gets tested entirely on localhost while it's being built, and public hosting is a separate step that happens once the work is further along.
 
-The full technical plan, including the math, the architecture, the dataset choices, and the evaluation design, is in `PLAN.md`. The phase-by-phase roadmap and current status live in `AGENT.md`.
+For the color-science background and reasoning behind the approach, see `math-explained/` and `blueprint/`.
 
 ## Why this approach
 
@@ -52,6 +55,10 @@ npm run dev
 ```
 
 That starts the web app on `http://localhost:3000`, pointed at the local API by default. To point it at a different backend, copy `.env.local.example` to `.env.local` and set `NEXT_PUBLIC_API_BASE_URL`.
+
+## Contributing
+
+Contributions are welcome, this is early enough that there's real room to shape it. See `CONTRIBUTING.md` for setup details, the one convention that actually matters (verifying color math against a reference, not just your own derivation), and how to propose larger changes. Please also read `CODE_OF_CONDUCT.md`.
 
 ## License
 

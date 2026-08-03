@@ -6,6 +6,7 @@ weighted k-means -> Lab-to-sRGB), and checks that what comes out actually
 corresponds to what went in: right color count, right rank order by area,
 and each recovered color close (in dE00) to the region it came from.
 """
+
 from __future__ import annotations
 
 import io

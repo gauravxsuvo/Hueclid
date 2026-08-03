@@ -4,6 +4,7 @@ Every pixel votes into exactly one bin; the bin's representative point is
 the mean Lab position of the pixels that landed in it (not the bin's grid
 center), so quantization error stays well under 1 dE00 at a 2-unit grid.
 """
+
 from __future__ import annotations
 
 import numpy as np
