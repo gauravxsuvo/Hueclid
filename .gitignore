@@ -31,3 +31,6 @@ Thumbs.db
 /.claude/
 /AGENT.md
 /PLAN.md
+
+# Marketing/article drafts -- not part of the product, not committed
+/articles/
