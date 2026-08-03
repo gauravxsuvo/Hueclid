@@ -1,6 +1,6 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="brand/banner-dark.svg">
-  <img src="brand/banner.svg" alt="Hueclid">
+  <source media="(prefers-color-scheme: dark)" srcset="brand/banner-wide-dark.svg">
+  <img src="brand/banner-wide.svg" alt="Hueclid">
 </picture>
 
 Hueclid generates accessible color palettes from images. Give it a screenshot or a photo and it produces a set of colors that actually work as a UI design system: a background, a surface color, text colors, a primary action color, a danger color, and so on, all checked against each other for contrast, not just checked one at a time against a neutral background.
