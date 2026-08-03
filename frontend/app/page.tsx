@@ -37,7 +37,11 @@ export default function Home() {
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-6 py-16">
       <header className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold">Hueclid</h1>
+        <div className="flex items-center gap-2.5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icon.svg" alt="" width={28} height={28} />
+          <h1 className="text-2xl font-semibold">Hueclid</h1>
+        </div>
         <p className="text-sm text-black/60 dark:text-white/60">
           Upload an image and extract a weighted color palette from it.
         </p>
