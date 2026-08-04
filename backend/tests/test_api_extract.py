@@ -60,6 +60,7 @@ def test_extract_rejects_corrupt_image():
     files = {"file": ("test.png", b"\x89PNGnotactuallyapng", "image/png")}
     resp = client.post("/api/v1/extract", files=files)
     assert resp.status_code == 400
+    assert resp.json()["detail"] == "Could not process image"
 
 
 def test_extract_k_query_param_is_respected():
