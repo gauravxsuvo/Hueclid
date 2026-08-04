@@ -4,6 +4,8 @@ import { useState } from "react";
 import { extractPalette, type ExtractResult } from "./lib/api";
 import { Swatch } from "./components/Swatch";
 
+const VALID_FILE_TYPES = ["image/png", "image/jpeg", "image/webp"];
+
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -11,6 +13,7 @@ export default function Home() {
   const [result, setResult] = useState<ExtractResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isDragging , setIsDragging] = useState(false);
 
   function handleFileChange(selected: File | null) {
     setFile(selected);
@@ -18,6 +21,30 @@ export default function Home() {
     setError(null);
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(selected ? URL.createObjectURL(selected) : null);
+  }
+
+  function handleDragOver(e:React.DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
+    setIsDragging(true);
+  }
+
+  function handleDragLeave(e: React.DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
+    setIsDragging(false);
+  }
+
+  function handleDrop(e: React.DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
+    setIsDragging(false);
+
+    const droppedFile = e.dataTransfer.files?.[0];
+    if (droppedFile) {
+      if (VALID_FILE_TYPES.includes(droppedFile.type)) {
+        handleFileChange(droppedFile);
+      } else {
+        setError("Invalid file type. Please upload a PNG, JPEG, or WEBP.");
+      }
+    }
   }
 
   async function handleExtract() {
@@ -48,10 +75,17 @@ export default function Home() {
       </header>
 
       <section className="flex flex-col gap-4">
-        <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-black/20 px-6 py-10 text-center text-sm text-black/60 hover:border-black/40 dark:border-white/20 dark:text-white/60 dark:hover:border-white/40">
+        <label
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}  
+        className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-black/20 px-6 py-10 text-center text-sm 
+        transition-colors ${isDragging ? "border-black/60 bg-black/5 text-black/80 dark:border-white/60 dark:bg-white/10 dark:text-white/80"
+              : "border-black/20 text-black/60 hover:border-black/40 dark:border-white/20 dark:text-white/60 dark:hover:border-white/40"
+          }`}>
           <input
             type="file"
-            accept="image/png,image/jpeg,image/webp"
+            accept={VALID_FILE_TYPES.join(",")}
             className="hidden"
             onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
           />
