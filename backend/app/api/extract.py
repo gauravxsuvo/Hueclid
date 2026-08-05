@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+import logging
+
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile
 
 from app.clustering.kmeans import extract_palette
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1", tags=["extract"])
 
@@ -32,5 +36,6 @@ async def extract(
 
     try:
         return extract_palette(image_bytes, k=k)
-    except Exception as exc:  # noqa: BLE001 -- surface as a 400, not a 500
-        raise HTTPException(status_code=400, detail=f"Could not process image: {exc}") from exc
+    except Exception:  # noqa: BLE001 -- surface as a 400, not a 500
+        logger.exception("Failed to extract palette from uploaded image")
+        raise HTTPException(status_code=400, detail="Could not process image") from None

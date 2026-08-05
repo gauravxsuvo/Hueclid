@@ -60,6 +60,21 @@ def test_extract_rejects_corrupt_image():
     files = {"file": ("test.png", b"\x89PNGnotactuallyapng", "image/png")}
     resp = client.post("/api/v1/extract", files=files)
     assert resp.status_code == 400
+    assert resp.json()["detail"] == "Could not process image"
+
+
+def test_extract_logs_exception_for_corrupt_image(caplog):
+    files = {"file": ("test.png", b"\x89PNGnotactuallyapng", "image/png")}
+    with caplog.at_level("ERROR", logger="app.api.extract"):
+        resp = client.post("/api/v1/extract", files=files)
+
+    assert resp.status_code == 400
+    assert resp.json()["detail"] == "Could not process image"
+    assert any(
+        "Failed to extract palette from uploaded image" in record.message
+        and record.exc_info is not None
+        for record in caplog.records
+    )
 
 
 def test_extract_k_query_param_is_respected():
