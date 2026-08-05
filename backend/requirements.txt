@@ -1,6 +1,7 @@
 numpy
 scikit-learn
 pillow
+coloraide
 fastapi
 uvicorn[standard]
 python-multipart

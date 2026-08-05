@@ -7,6 +7,7 @@ All functions accept and return float64 ndarrays of shape (..., 3).
 from __future__ import annotations
 
 import numpy as np
+from coloraide import Color
 
 # sRGB primaries -> XYZ (D65), and its inverse.
 _SRGB_TO_XYZ = np.array(
@@ -98,13 +99,48 @@ def srgb_to_lab(srgb_255: np.ndarray) -> np.ndarray:
 
 
 def lab_to_srgb(lab: np.ndarray) -> np.ndarray:
-    """CIELAB -> uint8-range sRGB [0, 255], hard-clipped to gamut.
+    """CIELAB -> uint8-range sRGB [0, 255].
 
-    NOTE: hard clipping shifts hue for out-of-gamut colors (PLAN.md 2.7).
-    This is a placeholder for the vertical slice; replace with Oklch
-    chroma-bisection gamut mapping before shipping the constrained
-    palette synthesis stage.
+    In-gamut colors go through the matrix pipeline above (exact, and
+    covered by the round-trip conformance tests). Colors that fall outside
+    the sRGB gamut are gamut-mapped instead of hard-clipped: hard clipping
+    shifts hue, sometimes badly, because clipping each channel independently
+    doesn't hold hue or lightness fixed. The CSS Color 4 algorithm holds
+    Oklch lightness and hue fixed and reduces chroma until the color lands
+    back in gamut; `fit(method="oklch-chroma")` implements exactly that,
+    so it's used here rather than a hand-rolled version (see PLAN.md 2.7).
+    Not coloraide's own default `fit()` method, hence passing it explicitly.
+
+    Hands coloraide this module's own XYZ (via lab_to_xyz above), constructed
+    as its "xyz-d65" space, rather than handing it (L, a, b) directly into
+    a Lab space of coloraide's own. coloraide's plain "lab" space is the
+    CSS-spec space, white-pointed at D50, while this whole module is D65
+    throughout (see xyz_to_lab/lab_to_xyz above) -- passing D65 coordinates
+    into "lab" silently reinterprets them as D50, a wrong starting color,
+    not just a rounding error, caught by color-conformance review before
+    this shipped. Going through this module's own XYZ instead of even
+    coloraide's own (correct) "lab-d65" space avoids relying on two
+    independently-computed Lab-to-XYZ conversions agreeing with each other.
     """
-    linear = xyz_to_linear(lab_to_xyz(lab))
+    lab = np.asarray(lab, dtype=np.float64)
+    xyz = lab_to_xyz(lab)
+    linear = xyz_to_linear(xyz)
+    # A tolerance, not an exact 0/1 boundary: colors that are in gamut but
+    # land a float64 epsilon past 0 or 1 after the matrix/cbrt chain above
+    # must not get routed through gamut mapping, that's a bug, not a fix
+    # (it did happen during development -- a color with linear ~= -1.8e-18
+    # tripped the strict check and came back visibly wrong).
+    _GAMUT_TOL = 1e-6
+    out_of_gamut = np.any((linear < -_GAMUT_TOL) | (linear > 1.0 + _GAMUT_TOL), axis=-1)
+
     srgb = linear_to_srgb(np.clip(linear, 0.0, 1.0))
-    return np.clip(srgb * 255.0, 0.0, 255.0)
+
+    if np.any(out_of_gamut):
+        flat_xyz = xyz.reshape(-1, 3)
+        flat_srgb = srgb.reshape(-1, 3)
+        for i in np.flatnonzero(out_of_gamut.reshape(-1)):
+            mapped = Color("xyz-d65", list(flat_xyz[i])).convert("srgb").fit(method="oklch-chroma")
+            flat_srgb[i] = mapped[:-1]
+        srgb = flat_srgb.reshape(srgb.shape)
+
+    return np.clip(srgb, 0.0, 1.0) * 255.0
