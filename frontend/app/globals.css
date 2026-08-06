@@ -1,26 +1,134 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------------------------------------------------------------
+   Palette
+
+   Light is warm paper and ink rather than white and black, it gives
+   the color swatches something to sit against instead of blowing
+   them out. The five accents are a real palette, not five hues
+   picked at random: violet and coral sit opposite each other, teal
+   and amber fill the gap, and each one is tuned per theme so the
+   contrast against its own background holds up.
+   --------------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f4f2ed;
+  --surface: #fbfaf7;
+  --surface-2: #ece9e2;
+  --foreground: #16151a;
+  --muted: #6c6960;
+  --faint: #9a968c;
+  --line: rgba(22, 21, 26, 0.12);
+  --line-strong: rgba(22, 21, 26, 0.28);
+
+  --violet: #4b31d4;
+  --coral: #d8412a;
+  --teal: #0c7a6b;
+  --amber: #b8790a;
+  --plum: #8e2f74;
+
+  --grain-opacity: 0.05;
+  --blob-opacity: 0.2;
+}
+
+:root.dark {
+  --background: #0b0a0d;
+  --surface: #141317;
+  --surface-2: #1c1a20;
+  --foreground: #f3f0ea;
+  --muted: #948f88;
+  --faint: #6b665f;
+  --line: rgba(243, 240, 234, 0.12);
+  --line-strong: rgba(243, 240, 234, 0.3);
+
+  --violet: #a394ff;
+  --coral: #ff7c5e;
+  --teal: #3ad6bd;
+  --amber: #f2bd4e;
+  --plum: #eb84c7;
+
+  --grain-opacity: 0.07;
+  --blob-opacity: 0.26;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  --color-violet: var(--violet);
+  --color-coral: var(--coral);
+  --color-teal: var(--teal);
+  --color-amber: var(--amber);
+  --color-plum: var(--plum);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-instrument-serif);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  /* clip, not hidden: overflow-x:hidden on the body turns it into a
+     scroll container, which is what silently breaks position:sticky
+     further down the tree. clip contains the same overflow without
+     creating one. */
+  overflow-x: clip;
+  /* the theme swap should feel deliberate rather than instant */
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+::selection {
+  background: var(--foreground);
+  color: var(--background);
+}
+
+/* The default 1px browser outline all but disappears against the
+   dark pill buttons. One visible ring, applied once, for every
+   focusable thing on the page. */
+:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Display type wants to be tighter and larger than the sans it sits
+   next to, the serif's own metrics leave too much air otherwise. */
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+}
+
+/* Hairline rules that read as printed rather than drawn */
+.rule {
+  height: 1px;
+  background: var(--line);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
