@@ -34,3 +34,7 @@ Thumbs.db
 
 # Marketing/article drafts -- not part of the product, not committed
 /articles/
+
+# Local hosting notes for this machine's deploy setup -- not part of the
+# product, never pushed
+/portway-README.md
