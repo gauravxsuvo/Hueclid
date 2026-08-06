@@ -5,15 +5,26 @@ import { extractPalette, type ExtractResult } from "./lib/api";
 import { Swatch } from "./components/Swatch";
 
 const VALID_FILE_TYPES = ["image/png", "image/jpeg", "image/webp"];
+const MIN_COLORS = 1;
+const MAX_COLORS = 12;
+
+function isValidColorsCount(value: string): boolean {
+  if (value.trim() === "") return false;
+  const n = Number(value);
+  return Number.isInteger(n) && n >= MIN_COLORS && n <= MAX_COLORS;
+}
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [k, setK] = useState(5);
+  const [colorsInput, setColorsInput] = useState("5");
   const [result, setResult] = useState<ExtractResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDragging , setIsDragging] = useState(false);
+
+  const colorsValid = isValidColorsCount(colorsInput);
+  const colorsCount = Number(colorsInput);
 
   function handleFileChange(selected: File | null) {
     setFile(selected);
@@ -48,11 +59,11 @@ export default function Home() {
   }
 
   async function handleExtract() {
-    if (!file) return;
+    if (!file || !colorsValid) return;
     setLoading(true);
     setError(null);
     try {
-      const data = await extractPalette(file, k);
+      const data = await extractPalette(file, colorsCount);
       setResult(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -108,20 +119,28 @@ export default function Home() {
           <input
             id="k"
             type="number"
-            min={1}
-            max={12}
-            value={k}
-            onChange={(e) => setK(Number(e.target.value))}
+            min={MIN_COLORS}
+            max={MAX_COLORS}
+            value={colorsInput}
+            onChange={(e) => setColorsInput(e.target.value)}
+            aria-invalid={!colorsValid}
+            aria-describedby={colorsValid ? undefined : "colors-count-hint"}
             className="w-16 rounded border border-black/15 px-2 py-1 text-sm dark:border-white/20 dark:bg-transparent"
           />
           <button
             onClick={handleExtract}
-            disabled={!file || loading}
+            disabled={!file || loading || !colorsValid}
             className="ml-auto rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background disabled:opacity-40"
           >
             {loading ? "Extracting..." : "Extract palette"}
           </button>
         </div>
+
+        {!colorsValid && (
+          <p id="colors-count-hint" className="text-sm text-red-600 dark:text-red-400">
+            Enter a whole number between {MIN_COLORS} and {MAX_COLORS}.
+          </p>
+        )}
 
         {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
       </section>
