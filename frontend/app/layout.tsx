@@ -1,20 +1,28 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { IBM_Plex_Mono, IBM_Plex_Sans, Newsreader } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const plexSans = IBM_Plex_Sans({
+  variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-mono",
   subsets: ["latin"],
+  weight: ["400", "500"],
+});
+
+const newsreader = Newsreader({
+  variable: "--font-display",
+  subsets: ["latin"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
   title: "Hueclid",
-  description: "Extract accessible color palettes from images.",
+  description: "Explore image palettes as weighted geometry in perceptual color space.",
 };
 
 export default function RootLayout({
@@ -25,9 +33,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${plexSans.variable} ${plexMono.variable} ${newsreader.variable}`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body>{children}</body>
     </html>
   );
 }

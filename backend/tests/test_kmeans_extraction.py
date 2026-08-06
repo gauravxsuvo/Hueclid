@@ -15,7 +15,7 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from app.clustering.kmeans import extract_palette
+from app.clustering.kmeans import _resize_linear, _select_visualization_points, extract_palette
 from app.color.deltae2000 import delta_e2000_matrix
 from app.color.srgb_lab import srgb_to_lab
 
@@ -95,3 +95,28 @@ def test_extract_palette_k_larger_than_bins_does_not_crash():
     assert result["k"] == 1
     assert len(result["palette"]) == 1
     assert result["palette"][0]["weight"] == pytest.approx(1.0)
+
+
+def test_visualization_selection_is_bounded_deterministic_and_cluster_aware():
+    weights = np.array([100, 90, 80, 70, 60, 50, 4, 3, 2, 1], dtype=np.int64)
+    labels = np.array([0, 0, 0, 0, 0, 0, 1, 1, 2, 2], dtype=np.int64)
+
+    first = _select_visualization_points(weights, labels, max_points=6, n_clusters=3)
+    second = _select_visualization_points(weights, labels, max_points=6, n_clusters=3)
+
+    np.testing.assert_array_equal(first, second)
+    assert first.shape == (6,)
+    assert set(labels[first]) == {0, 1, 2}
+    assert 0 in first  # heaviest global point
+    assert 6 in first  # heaviest point in the small second cluster
+    assert 8 in first  # heaviest point in the small third cluster
+
+
+def test_linear_resize_clips_lanczos_ringing_to_physical_rgb_range():
+    linear = np.ones((64, 513, 3), dtype=np.float64)
+    linear[:, 255:257] = 0.0
+
+    resized = _resize_linear(linear, target_long_edge=512)
+
+    assert resized.min() >= 0.0
+    assert resized.max() <= 1.0

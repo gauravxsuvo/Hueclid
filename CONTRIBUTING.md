@@ -8,23 +8,32 @@ If you're fixing a bug, improving a test, or cleaning up something small, just o
 
 ## Getting the project running
 
-**Backend** (Python, FastAPI) from `backend/`:
+**Backend** (Python 3.12, FastAPI) from `backend/` on macOS or Linux:
 
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python -m pytest
+python -m uvicorn app.main:app --reload --port 8000
 ```
-python -m venv .venv
-.venv/Scripts/python.exe -m pip install -r requirements.txt
-.venv/Scripts/python.exe -m pytest
-.venv/Scripts/python.exe -m uvicorn app.main:app --reload --port 8000
-```
+
+On Windows PowerShell, use `py -3.12 -m venv .venv` and
+`.venv\Scripts\Activate.ps1` for the first two commands.
 
 **Frontend** (Next.js, TypeScript) from `frontend/`:
 
-```
+```bash
 npm install
 npm run dev
 ```
 
-That's the whole thing. No accounts, no external services, no dataset downloads. Everything runs and gets tested on localhost.
+The default development server uses Webpack while the current Next.js 16 Turbopack path has a React
+Client Manifest issue with the 3D viewer. Use `npm run dev:turbo` only when testing that upstream path.
+
+Keep both servers running, open `http://localhost:3000`, upload an image, and select **Map color
+space**. The API runs at `http://localhost:8000`; `curl http://localhost:8000/health` should return
+`{"status":"ok"}`. No accounts, external services, or dataset downloads are required.
 
 ## Background reading
 

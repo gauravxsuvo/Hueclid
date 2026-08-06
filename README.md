@@ -24,6 +24,7 @@ This is an early-stage project, built openly and in phases rather than all at on
 - Round-trip conversion has been property-tested across 10,000 random colors with a maximum error well under one part in a million.
 - Lab-space histogram binning and a weighted k-means palette extractor are implemented and verified against a real test image with known color regions.
 - A working API (FastAPI) and a working web page (Next.js) exist, and have been tested together end to end: upload an image, get back a ranked, weighted palette.
+- The web app includes an interactive 3D CIELAB viewer backed by a versioned, bounded API payload: weighted histogram bins, cluster assignments, and palette centroids can be inspected without sending raw pixels to the browser.
 - Not deployed publicly. That's deliberate for now: the project runs and gets tested entirely on localhost while it's being built, and public hosting is a separate step that happens once the work is further along.
 
 For the color-science background and reasoning behind the approach, see `math-explained/` and `blueprint/`.
@@ -34,27 +35,91 @@ Two prior projects do related work. Colorgorical optimizes perceptual distance a
 
 What's different here is the combination of three things: treating APCA as a hard constraint inside the generation process rather than a filter applied afterward, generating typed design-system roles with a directed constraint graph rather than a flat set of mutually distinguishable colors, and solving the constrained selection step exactly (via CP-SAT) rather than through stochastic search, so the result is either provably correct or provably infeasible, with a clear answer for which constraint is the problem when it is infeasible.
 
-## Setup
+## Prerequisites
 
-The backend is Python. From `backend/`:
+- Python 3.12
+- Node.js 22 or newer
 
+Check the versions that your shell will use before creating an environment:
+
+```bash
+python3.12 --version
+node --version
 ```
-python -m venv .venv
-.venv/Scripts/python.exe -m pip install -r requirements.txt
-.venv/Scripts/python.exe -m pytest
-.venv/Scripts/python.exe -m uvicorn app.main:app --reload --port 8000
+
+## Run and test locally
+
+### 1. Start the FastAPI backend
+
+From `backend/` on macOS or Linux:
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python -m pytest
+python -m uvicorn app.main:app --reload --port 8000
 ```
 
-That installs NumPy, scikit-learn, Pillow, FastAPI, and the test tooling, runs the full test suite, and starts the API on `http://localhost:8000`.
+On Windows PowerShell, create and activate the environment with:
 
-The frontend is Next.js. From `frontend/`:
-
+```powershell
+py -3.12 -m venv .venv
+.venv\Scripts\Activate.ps1
 ```
+
+Keep this terminal running. The API is available at `http://localhost:8000`; verify it in another
+terminal with:
+
+```bash
+curl http://localhost:8000/health
+```
+
+The expected response is `{"status":"ok"}`.
+
+### 2. Start the Next.js frontend
+
+Open a second terminal and run from `frontend/`:
+
+```bash
 npm install
 npm run dev
 ```
 
-That starts the web app on `http://localhost:3000`, pointed at the local API by default. To point it at a different backend, copy `.env.local.example` to `.env.local` and set `NEXT_PUBLIC_API_BASE_URL`.
+The development command uses Webpack because the current Next.js 16 Turbopack dev server can emit
+an incomplete React Client Manifest for the client-only 3D viewer. Production builds are unaffected.
+`npm run dev:turbo` remains available for retesting Turbopack after dependency updates.
+
+Open `http://localhost:3000`. Upload a PNG, JPEG, or WebP image, choose 2–12 clusters, and select
+**Map color space**. A successful smoke test shows the ranked palette and interactive 3D CIELAB
+point cloud; selecting a swatch should isolate its cluster and **Show all clusters** should reset it.
+
+The frontend points at the local API by default. To use a different backend, copy
+`.env.local.example` to `.env.local` and set `NEXT_PUBLIC_API_BASE_URL`.
+
+### 3. Run all development checks
+
+Backend, from `backend/` with the Python 3.12 environment active:
+
+```bash
+python -m ruff check .
+python -m ruff format --check .
+python -m pytest
+```
+
+Frontend, from `frontend/`:
+
+```bash
+npm run lint
+npx tsc --noEmit
+npm run build
+```
+
+If pytest reports that it cannot evaluate `VisualizationPayload | None`, the existing virtual
+environment was created with an older Python. Deactivate it, move or remove `.venv`, then recreate it
+with `python3.12 -m venv .venv` as shown above.
+
+The viewer's API contract, point-selection rules, implementation process, and verification checklist are documented in [`docs/3d-viewer-foundation.md`](docs/3d-viewer-foundation.md).
 
 ## Contributing
 
