@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
+import "lenis/dist/lenis.css";
+import { SmoothScroll } from "./components/SmoothScroll";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
