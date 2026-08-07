@@ -19,7 +19,25 @@ export function Footer() {
 
   return (
     <footer className="relative mt-8 overflow-hidden border-t border-line">
-      <div className="shell pt-16">
+      {/* A broad wash that fills the bottom of the footer and
+          brightens toward the centre, so the whole area lights up as
+          you reach the end of the page and the wordmark sits inside
+          the light. Built from the page's own accents. Fades in once
+          on view and then holds steady, no flicker. Behind
+          everything, no pointer events. */}
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[120%]"
+        style={{
+          background:
+            "radial-gradient(120% 90% at 50% 100%, color-mix(in srgb, var(--violet) 78%, transparent) 0%, color-mix(in srgb, var(--plum) 48%, transparent) 34%, color-mix(in srgb, var(--violet) 22%, transparent) 56%, transparent 82%)",
+        }}
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true, margin: "-4% 0px" }}
+        transition={{ duration: reduce ? 0 : 1.2, ease: EASE }}
+      />
+      <div className="shell relative pt-16">
         <div className="grid gap-8 pb-14 sm:grid-cols-2">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
@@ -72,13 +90,13 @@ export function Footer() {
             the mark still sits three quarters of the way down the
             viewport and can never travel far enough to finish a
             scroll-linked range, which left it stuck at opacity zero. */}
-        <div aria-hidden className="-mb-[0.1em] overflow-hidden pb-1">
+        <div aria-hidden className="relative -mb-[0.1em] overflow-hidden pb-1">
           <motion.p
             initial={{ y: "26%", opacity: 0 }}
             whileInView={{ y: "0%", opacity: 1 }}
             viewport={{ once: true, margin: "-4% 0px" }}
             transition={{ duration: reduce ? 0 : 1.3, ease: EASE }}
-            className="text-center text-[clamp(3.5rem,17vw,16rem)] leading-[0.92] font-medium tracking-[-0.05em] text-foreground/10 select-none"
+            className="relative text-center text-[clamp(3.5rem,17vw,16rem)] leading-[0.92] font-medium tracking-[-0.05em] text-foreground/90 select-none"
           >
             Hueclid
           </motion.p>
