@@ -30,6 +30,15 @@
 
   --grain-opacity: 0.05;
   --blob-opacity: 0.2;
+
+  /* Footer glow. On the warm paper theme the accents are saturated
+     darks, so a strong wash reads as a bruise and swallows the near
+     black wordmark. Kept light and gentle here; the dark theme below
+     turns it up. */
+  --footer-glow-opacity: 0.85;
+  --footer-glow-1: 60%;
+  --footer-glow-2: 40%;
+  --footer-glow-3: 20%;
 }
 
 :root.dark {
@@ -50,6 +59,13 @@
 
   --grain-opacity: 0.07;
   --blob-opacity: 0.26;
+
+  /* The dark background can carry a much stronger, brighter wash, and
+     the accents here are already the light variants. */
+  --footer-glow-opacity: 1;
+  --footer-glow-1: 78%;
+  --footer-glow-2: 48%;
+  --footer-glow-3: 22%;
 }
 
 @theme inline {

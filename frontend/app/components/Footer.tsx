@@ -22,21 +22,29 @@ export function Footer() {
       {/* A broad wash that fills the bottom of the footer and
           brightens toward the centre, so the whole area lights up as
           you reach the end of the page and the wordmark sits inside
-          the light. Built from the page's own accents. Fades in once
-          on view and then holds steady, no flicker. Behind
-          everything, no pointer events. */}
-      <motion.div
+          the light. Built from the page's own accents, and tuned per
+          theme through the --footer-glow-* tokens: gentle on the warm
+          paper theme, strong on the dark one. Fades in once on view
+          and then holds steady, no flicker. Behind everything, no
+          pointer events. The opacity token lives on this outer wrapper
+          so framer only ever animates a plain 0 to 1 on the inner
+          layer. */}
+      <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[120%]"
-        style={{
-          background:
-            "radial-gradient(120% 90% at 50% 100%, color-mix(in srgb, var(--violet) 78%, transparent) 0%, color-mix(in srgb, var(--plum) 48%, transparent) 34%, color-mix(in srgb, var(--violet) 22%, transparent) 56%, transparent 82%)",
-        }}
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true, margin: "-4% 0px" }}
-        transition={{ duration: reduce ? 0 : 1.2, ease: EASE }}
-      />
+        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[120%] opacity-[var(--footer-glow-opacity)]"
+      >
+        <motion.div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(120% 90% at 50% 100%, color-mix(in srgb, var(--violet) var(--footer-glow-1), transparent) 0%, color-mix(in srgb, var(--plum) var(--footer-glow-2), transparent) 34%, color-mix(in srgb, var(--violet) var(--footer-glow-3), transparent) 56%, transparent 82%)",
+          }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: "-4% 0px" }}
+          transition={{ duration: reduce ? 0 : 1.2, ease: EASE }}
+        />
+      </div>
       <div className="shell relative pt-16">
         <div className="grid gap-8 pb-14 sm:grid-cols-2">
           <motion.div
