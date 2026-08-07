@@ -19,7 +19,7 @@ export function Footer() {
 
   return (
     <footer className="relative mt-8 overflow-hidden border-t border-line">
-      <div className="mx-auto w-full max-w-[1500px] px-5 pt-16 sm:px-10 lg:px-16">
+      <div className="shell pt-16">
         <div className="grid gap-8 pb-14 sm:grid-cols-2">
           <motion.div
             initial={{ opacity: 0, y: 24 }}

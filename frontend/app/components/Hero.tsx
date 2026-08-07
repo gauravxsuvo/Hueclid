@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { EASE, RevealText } from "./motion";
+import { ExtractTool } from "./ExtractTool";
 import { ColorBand } from "./ColorBand";
 
 /* Three very large, very soft color fields drifting behind the type.
@@ -65,7 +65,7 @@ function UnderlineStroke() {
       className="absolute -bottom-[0.05em] left-0 block h-[0.16em] w-full origin-left"
       initial={{ scaleX: 0, opacity: 0 }}
       animate={{ scaleX: 1, opacity: 1 }}
-      transition={{ duration: reduce ? 0 : 1, ease: EASE, delay: reduce ? 0 : 1 }}
+      transition={{ duration: reduce ? 0 : 1, ease: EASE, delay: reduce ? 0 : 0.85 }}
     >
       <svg
         viewBox="0 0 200 12"
@@ -85,112 +85,95 @@ function UnderlineStroke() {
   );
 }
 
+/* The tool is the product, so it sits in the first screen next to
+   the headline rather than three sections down. Everything that
+   explains it comes after, for the people who want it. */
 export function Hero() {
-  const copyRef = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
-
-  /* Measured on the untransformed wrapper, not on the element being
-     moved, otherwise the transform feeds back into its own scroll
-     measurement. Progress hits 1 exactly when the copy has fully
-     left the top of the viewport, so the fade can never dim text
-     that is still sitting on screen. */
-  const { scrollYProgress } = useScroll({
-    target: copyRef,
-    offset: ["start start", "end start"],
-  });
-
-  /* Flattening the output range rather than dropping the style keeps
-     the rendered transform identical between server and client, and
-     at rest both ranges resolve to the same "no transform" anyway. */
-  const copyY = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [0, -80]);
-  const copyOpacity = useTransform(scrollYProgress, [0.35, 1], reduce ? [1, 1] : [1, 0]);
 
   return (
     <section id="top" className="relative overflow-hidden">
       <AmbientField />
 
-      <div
-        ref={copyRef}
-        className="relative mx-auto w-full max-w-[1500px] px-5 pt-20 pb-14 sm:px-10 md:pt-28 lg:px-16 lg:pt-32"
-      >
-      <motion.div style={{ y: copyY, opacity: copyOpacity }}>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, ease: EASE }}
-          className="flex items-center gap-4"
-        >
-          <motion.span
-            aria-hidden
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: 1, ease: EASE, delay: 0.15 }}
-            className="h-px w-12 origin-left bg-line-strong sm:w-20"
-          />
-          <span className="font-mono text-[11px] tracking-[0.22em] text-muted uppercase">
-            v0.1.0 &nbsp;/&nbsp; foundation released
-          </span>
-        </motion.div>
-
-        <h1 className="mt-8 max-w-[16ch] text-[clamp(2.9rem,8.2vw,7.5rem)] leading-[0.94] font-medium tracking-[-0.035em] lg:max-w-[18ch]">
-          <RevealText text="Turn any image" delay={0.1} />
-          <br />
-          <RevealText text="into an" delay={0.22} />{" "}
-          <span className="relative inline-block overflow-visible">
-            <RevealText
-              text="accessible"
-              delay={0.32}
-              className="font-display pr-[0.06em] italic"
-            />
-            <UnderlineStroke />
-          </span>
-          <br />
-          <RevealText text="color palette" delay={0.44} />
-        </h1>
-
-        {/* Deliberately pushed to the right half at desktop. A full
-            width paragraph under a full width headline reads like a
-            document, the offset reads like a layout. */}
-        <div className="mt-12 grid gap-8 md:mt-14 md:grid-cols-12 md:gap-8">
-          <motion.p
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: reduce ? 0 : 1, ease: EASE, delay: reduce ? 0 : 0.85 }}
-            className="text-base leading-relaxed text-muted md:col-span-6 md:col-start-6 lg:col-span-5 lg:col-start-7 lg:text-lg"
-          >
-            Hueclid reads the colors that actually make up a photo or screenshot and returns a
-            ranked, area weighted palette. Backgrounds, surfaces, text and accents that were
-            checked against each other, not five swatches that happen to look fine alone.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: reduce ? 0 : 1, ease: EASE, delay: reduce ? 0 : 0.98 }}
-            className="flex flex-wrap items-center gap-3 md:col-span-12 md:col-start-6 lg:col-start-7"
-          >
-            <a
-              href="#extract"
-              className="group relative overflow-hidden rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background"
+      <div className="shell relative pt-8 pb-14 sm:pt-14 sm:pb-16 lg:pt-20">
+        <div className="grid items-start gap-10 lg:grid-cols-12 lg:gap-14">
+          <div className="lg:col-span-6 xl:col-span-5">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: reduce ? 0 : 0.8, ease: EASE }}
+              className="flex items-center gap-4"
             >
-              <span className="relative z-10">Try it on an image</span>
-              {/* the fill sweeps up from the bottom edge on hover */}
-              <span
+              <motion.span
                 aria-hidden
-                className="absolute inset-0 origin-bottom scale-y-0 bg-violet transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-y-100"
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: reduce ? 0 : 1, ease: EASE, delay: reduce ? 0 : 0.15 }}
+                className="h-px w-10 origin-left bg-line-strong sm:w-16"
               />
-            </a>
-            <a
-              href="https://github.com/gauravxsuvo/Hueclid"
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-full border border-line-strong px-6 py-3 text-sm font-medium transition-colors hover:bg-foreground hover:text-background"
+              <span className="font-mono text-[11px] tracking-[0.22em] text-muted uppercase">
+                v0.1.0 &nbsp;/&nbsp; foundation released
+              </span>
+            </motion.div>
+
+            <h1 className="mt-5 text-[clamp(2.05rem,4.8vw,4.3rem)] leading-[0.98] font-medium tracking-[-0.035em] sm:mt-6">
+              <RevealText text="Turn any image" delay={0.08} />
+              <br />
+              <RevealText text="into an" delay={0.18} />{" "}
+              <span className="relative inline-block overflow-visible">
+                <RevealText
+                  text="accessible"
+                  delay={0.26}
+                  className="font-display pr-[0.06em] italic"
+                />
+                <UnderlineStroke />
+              </span>
+              <br />
+              <RevealText text="color palette" delay={0.36} />
+            </h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: reduce ? 0 : 1, ease: EASE, delay: reduce ? 0 : 0.6 }}
+              className="mt-5 max-w-md leading-relaxed text-muted"
             >
-              View the source
-            </a>
-          </motion.div>
+              Drop in a photo or a screenshot. Hueclid returns a ranked, area weighted palette
+              built from the colors that actually make it up.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: reduce ? 0 : 1, ease: EASE, delay: reduce ? 0 : 0.72 }}
+              className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted"
+            >
+              <span className="flex items-center gap-2">
+                <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-teal" />
+                Nothing is stored
+              </span>
+              <span className="flex items-center gap-2">
+                <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-violet" />
+                Runs in under a second
+              </span>
+              {/* the same link is in the header, so on a phone it just
+                  costs a line above the fold */}
+              <a
+                href="https://github.com/gauravxsuvo/Hueclid"
+                target="_blank"
+                rel="noreferrer"
+                className="hidden underline decoration-line-strong underline-offset-4 transition-colors hover:text-foreground sm:inline"
+              >
+                Source on GitHub
+              </a>
+            </motion.div>
+          </div>
+
+          {/* ExtractTool renders two grid children of its own: the
+              upload card for the right hand column, and the results,
+              which span the full width on a row underneath. */}
+          <ExtractTool />
         </div>
-      </motion.div>
       </div>
 
       <ColorBand />

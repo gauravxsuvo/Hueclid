@@ -119,6 +119,53 @@ body {
   background: var(--line);
 }
 
+/* One shell and one vertical rhythm for the whole page.
+
+   These were Tailwind classes repeated on every section, and they had
+   already drifted apart by a step or two in a couple of places, which
+   is exactly the kind of thing you see as "the spacing feels off"
+   without being able to point at it. Defined once, every section is
+   guaranteed to share a left edge and the same breathing room. */
+.shell {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 1500px;
+  padding-inline: 1.25rem;
+}
+
+.section {
+  padding-block: 5.5rem;
+}
+
+@media (min-width: 640px) {
+  .shell {
+    padding-inline: 2.5rem;
+  }
+  .section {
+    padding-block: 6.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .shell {
+    padding-inline: 4rem;
+  }
+  .section {
+    padding-block: 8rem;
+  }
+}
+
+/* Parallax columns only make sense while they are actually side by
+   side. Once they stack, three different drift rates just look like
+   uneven gaps between groups of cards. !important is deliberate: it
+   is the one thing that outranks the inline transform framer writes
+   to a motion component. */
+@media (max-width: 1023.98px) {
+  .stack-no-parallax {
+    transform: none !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

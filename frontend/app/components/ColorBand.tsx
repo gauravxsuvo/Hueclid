@@ -108,7 +108,7 @@ export function ColorBand() {
 
   return (
     <div className="w-full">
-      <div className="flex h-[34vh] max-h-[320px] min-h-[170px] w-full overflow-hidden">
+      <div className="flex h-[26vh] max-h-[250px] min-h-[150px] w-full overflow-hidden">
         {PALETTES[cur].colors.map((_, column) => (
           <Column key={column} index={column} cur={cur} prev={prev} />
         ))}

@@ -7,8 +7,9 @@ import { HoverLink } from "./HoverLink";
 import { ThemeToggle } from "./ThemeToggle";
 
 const LINKS = [
-  { href: "#method", label: "Method" },
   { href: "#extract", label: "Try it" },
+  { href: "#palettes", label: "Palettes" },
+  { href: "#method", label: "Method" },
   { href: "#roadmap", label: "Roadmap" },
   { href: "https://github.com/gauravxsuvo/Hueclid", label: "GitHub", external: true },
 ];
@@ -56,7 +57,7 @@ export function Header() {
           : "border-b border-transparent bg-transparent"
       }`}
     >
-      <div className="mx-auto flex w-full max-w-[1500px] items-center justify-between px-5 py-4 sm:px-10 lg:px-16">
+      <div className="shell flex items-center justify-between py-4">
         <a href="#top" className="group flex items-center gap-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -77,8 +78,8 @@ export function Header() {
           <span className="text-[15px] font-semibold tracking-tight">Hueclid</span>
         </a>
 
-        <div className="flex items-center gap-2 sm:gap-7">
-          <nav className="hidden items-center gap-7 sm:flex">
+        <div className="flex items-center gap-2 md:gap-6">
+          <nav className="hidden items-center gap-6 md:flex lg:gap-7">
             {LINKS.map((link) => (
               <HoverLink
                 key={link.href}
@@ -99,7 +100,7 @@ export function Header() {
             aria-expanded={menuOpen}
             aria-controls="mobile-nav"
             aria-label={menuOpen ? "Close menu" : "Open menu"}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-muted transition-colors hover:text-foreground sm:hidden"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-muted transition-colors hover:text-foreground md:hidden"
           >
             <span aria-hidden className="relative block h-[10px] w-[18px]">
               <motion.span
@@ -126,7 +127,7 @@ export function Header() {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.45, ease: EASE }}
-            className="overflow-hidden border-t border-line sm:hidden"
+            className="overflow-hidden border-t border-line md:hidden"
           >
             <ul className="flex flex-col px-5 py-2">
               {LINKS.map((link, i) => (

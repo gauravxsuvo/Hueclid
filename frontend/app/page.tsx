@@ -1,9 +1,8 @@
 import { Header } from "./components/Header";
 import { ScrollProgress } from "./components/ScrollProgress";
 import { Hero } from "./components/Hero";
-import { Marquee } from "./components/Marquee";
+import { PaletteGallery } from "./components/PaletteGallery";
 import { Method } from "./components/Method";
-import { ExtractTool } from "./components/ExtractTool";
 import { Timeline } from "./components/Timeline";
 import { Footer } from "./components/Footer";
 
@@ -22,10 +21,11 @@ export default function Home() {
       <ScrollProgress />
       <Header />
       <main className="flex flex-1 flex-col">
+        {/* Hero carries the upload tool and the color band. The
+            explanatory sections all sit behind it. */}
         <Hero />
-        <Marquee />
+        <PaletteGallery />
         <Method />
-        <ExtractTool />
         <Timeline />
       </main>
       <Footer />

@@ -112,7 +112,7 @@ export function Method() {
     <section
       ref={sectionRef}
       id="method"
-      className="mx-auto w-full max-w-[1500px] scroll-mt-24 px-5 py-24 sm:px-10 md:py-32 lg:px-16"
+      className="shell section scroll-mt-24"
     >
       <div className="grid gap-10 lg:grid-cols-12 lg:gap-16">
         <div className="lg:col-span-4">
