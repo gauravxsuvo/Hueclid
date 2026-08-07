@@ -2,6 +2,12 @@
 
 Thanks for taking a look. This is an early-stage project, both a tool and a research effort around accessible color palette generation, so the shape of "how to contribute" is a little different from a mature codebase: the architecture is still settling, and some pieces described in the README (the clustering engine, the constraint solver, the evaluation pipeline) don't exist yet. That's not a problem, it's just useful context before you dive in.
 
+## `main` is what's actually running
+
+Hueclid is hosted at https://hueclid.cinexg.com, and that site runs off `main`. Nothing gets pushed to `main` directly, not by outside contributors, who wouldn't have push access to do that anyway, and not by the maintainer either. Every change, however small, goes through a branch and a pull request. This is enforced on GitHub's side: a pull request and a green CI run on both `backend` and `frontend` are required before anything can merge.
+
+In practice this changes nothing about how you'd already be contributing, fork or branch, then open a pull request, is the normal flow either way. It just means there's no direct-push shortcut for anyone, including whoever's merging it.
+
 ## Before you start on something big
 
 If you're fixing a bug, improving a test, or cleaning up something small, just open a pull request. For anything larger, a new feature, a new color-space implementation, a change to the API shape, please open an issue first to talk it through. The roadmap is still being figured out in places, and it's much better to align before you put real time into something than after.
@@ -28,7 +34,7 @@ That's the whole thing. No accounts, no external services, no dataset downloads.
 
 ## Background reading
 
-If you want to understand the color math and the reasoning behind the approach before touching the code, `math-explained/` and `blueprint/` have the deeper write-ups. Worth reading before proposing changes to anything under `backend/app/color/`.
+If you want to understand the color math and the reasoning behind the approach before touching the code, `math-explained/` has the deeper write-up on the math, and the [wiki](https://github.com/gauravxsuvo/Hueclid/wiki) covers the idea, the theory, and how the current architecture actually works end to end. Worth reading before proposing changes to anything under `backend/app/color/`.
 
 ## The one rule that actually matters: verify color math against a reference
 
