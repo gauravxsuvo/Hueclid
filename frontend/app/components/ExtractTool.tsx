@@ -43,6 +43,7 @@ export function ExtractTool() {
   const [isDragging, setIsDragging] = useState(false);
   const [copiedAll, setCopiedAll] = useState(false);
   const [busySample, setBusySample] = useState<string | null>(null);
+  const resultRef = useRef<HTMLDivElement | null>(null);
 
   const colorsValid = isValidColorsCount(kText);
   const colorsCount = Number(kText);
@@ -62,6 +63,17 @@ export function ExtractTool() {
       if (previewRef.current) URL.revokeObjectURL(previewRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (!result) return;
+
+    requestAnimationFrame(() => {
+      resultRef.current?.scrollIntoView({
+        behavior: reduce ? "auto" : "smooth",
+        block: "start",
+      });
+    });
+  }, [reduce, result]);
 
   function handleFileChange(selected: File | null) {
     setFile(selected);
@@ -333,11 +345,12 @@ export function ExtractTool() {
       <AnimatePresence>
         {result && (
           <motion.div
+            ref={resultRef}
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: reduce ? 0 : 0.7, ease: EASE }}
-            className="lg:col-span-12"
+            className="scroll-mt-[42vh] lg:col-span-12"
           >
             <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 border-t border-line pt-6">
               <h2 className="text-xl font-medium tracking-tight">Your palette</h2>
