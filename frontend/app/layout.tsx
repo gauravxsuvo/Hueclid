@@ -91,7 +91,7 @@ export default function RootLayout({
           className="pointer-events-none fixed inset-0 z-[70] opacity-[var(--grain-opacity)] mix-blend-overlay"
           style={{ backgroundImage: GRAIN }}
         />
-        {children}
+        <SmoothScroll>{children}</SmoothScroll>
       </body>
     </html>
   );

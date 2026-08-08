@@ -27,7 +27,10 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
      the plain wrapper, and Lenis only turns on once we know motion is
      wanted. */
   const [ready, setReady] = useState(false);
-  useEffect(() => setReady(true), []);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setReady(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
   if (!ready || reduce) return <>{children}</>;
 
