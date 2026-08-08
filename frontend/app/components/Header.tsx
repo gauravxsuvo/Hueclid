@@ -14,6 +14,9 @@ const LINKS = [
   { href: "https://github.com/gauravxsuvo/Hueclid", label: "GitHub", external: true },
 ];
 
+const PRIMARY_LINKS = LINKS.slice(0, -1);
+const GITHUB_LINK = LINKS[LINKS.length - 1];
+
 export function Header() {
   const { scrollY } = useScroll();
   const lastY = useRef(0);
@@ -50,49 +53,62 @@ export function Header() {
       }}
       initial={{ opacity: 0, y: -16 }}
       animate={{ opacity: 1, y: visible ? 0 : "-100%" }}
-      transition={{ duration: 0.6, ease: EASE }}
-      className={`sticky top-0 z-50 transition-[background-color,border-color,backdrop-filter] duration-500 ${
+      transition={{ duration: 0.35, ease: EASE }}
+      className={`fixed top-3 inset-x-3 z-50 mx-auto max-w-5xl border shadow-[0_18px_60px_rgba(0,0,0,0.12)] transition-[background-color,border-color,backdrop-filter,box-shadow,border-radius] duration-500 sm:top-4 sm:inset-x-4 dark:shadow-[0_18px_70px_rgba(0,0,0,0.35)] ${
+        menuOpen ? "rounded-[1.75rem]" : "rounded-full"
+      } ${
         scrolled || menuOpen
-          ? "border-b border-line bg-background/80 backdrop-blur-xl"
-          : "border-b border-transparent bg-transparent"
+          ? "border-line bg-background/80 backdrop-blur-xl"
+          : "border-line bg-background/60 backdrop-blur-xl"
       }`}
     >
-      <div className="shell flex items-center justify-between py-4">
-        <a href="#top" className="group flex items-center gap-2.5">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/icon.svg"
-            alt=""
-            width={22}
-            height={22}
-            className="transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:rotate-90 dark:hidden"
-          />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/icon-dark.svg"
-            alt=""
-            width={22}
-            height={22}
-            className="hidden transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:rotate-90 dark:block"
-          />
-          <span className="text-[15px] font-semibold tracking-tight">Hueclid</span>
-        </a>
+      <div className="flex h-14 items-center justify-between px-4 sm:h-16 sm:px-6">
+        <div className="flex min-w-0 items-center gap-8 lg:gap-12">
+          <a href="#top" className="group flex shrink-0 items-center gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/icon.svg"
+              alt=""
+              width={28}
+              height={28}
+              className="transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:rotate-90 dark:hidden"
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/icon-dark.svg"
+              alt=""
+              width={28}
+              height={28}
+              className="hidden transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:rotate-90 dark:block"
+            />
+            <span className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">Hueclid</span>
+          </a>
 
-        <div className="flex items-center gap-2 md:gap-6">
-          <nav className="hidden items-center gap-6 md:flex lg:gap-7">
-            {LINKS.map((link) => (
+          <nav className="hidden items-center gap-7 md:flex lg:gap-8">
+            {PRIMARY_LINKS.map((link) => (
               <HoverLink
                 key={link.href}
                 href={link.href}
                 external={link.external}
-                className="text-sm"
+                className="text-sm font-medium"
               >
                 {link.label}
               </HoverLink>
             ))}
           </nav>
+        </div>
 
+        <div className="flex shrink-0 items-center gap-2 sm:gap-4">
           <ThemeToggle />
+
+          <a
+            href={GITHUB_LINK.href}
+            target="_blank"
+            rel="noreferrer"
+            className="hidden rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-background transition-transform hover:scale-105 active:scale-95 sm:block"
+          >
+            {GITHUB_LINK.label}
+          </a>
 
           <button
             type="button"
