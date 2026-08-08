@@ -10,10 +10,22 @@ import { EASE } from "./motion";
 const VALID_FILE_TYPES = ["image/png", "image/jpeg", "image/webp"];
 const MIN_K = 1;
 const MAX_K = 12;
+const DEFAULT_K = 5;
 
 function clampK(value: number): number {
   if (Number.isNaN(value)) return MIN_K;
   return Math.min(MAX_K, Math.max(MIN_K, Math.round(value)));
+}
+
+/* The field is validated rather than clamped. Typing 13 or 1.5 or
+   clearing it used to silently snap to the nearest legal value on
+   blur, which meant hitting Extract could run against a number you
+   never actually chose. Now it blocks and says why, matching how the
+   file type and drag and drop errors already behave. */
+function isValidColorsCount(value: string): boolean {
+  if (value.trim() === "") return false;
+  const n = Number(value);
+  return Number.isInteger(n) && n >= MIN_K && n <= MAX_K;
 }
 
 /* Renders as two siblings rather than one wrapper, because it lives
@@ -24,14 +36,16 @@ export function ExtractTool() {
   const reduce = useReducedMotion();
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [k, setK] = useState(5);
-  const [kText, setKText] = useState("5");
+  const [kText, setKText] = useState(String(DEFAULT_K));
   const [result, setResult] = useState<ExtractResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [copiedAll, setCopiedAll] = useState(false);
   const [busySample, setBusySample] = useState<string | null>(null);
+
+  const colorsValid = isValidColorsCount(kText);
+  const colorsCount = Number(kText);
 
   /* Swapping files already revokes the outgoing URL, but the last
      one selected stayed allocated for the life of the tab. Mirroring
@@ -57,10 +71,16 @@ export function ExtractTool() {
     setPreviewUrl(selected ? URL.createObjectURL(selected) : null);
   }
 
-  function setColors(next: number) {
-    const clamped = clampK(next);
-    setK(clamped);
-    setKText(String(clamped));
+  /* The stepper always lands on a legal value, even starting from an
+     invalid typed one, since a click here is "fix this for me," not
+     free typing. From an invalid field it resets to the default
+     rather than nudging around an undefined base. */
+  function nudge(delta: number) {
+    if (!colorsValid) {
+      setKText(String(DEFAULT_K));
+      return;
+    }
+    setKText(String(clampK(colorsCount + delta)));
   }
 
   function handleDragOver(e: React.DragEvent<HTMLLabelElement>) {
@@ -112,7 +132,7 @@ export function ExtractTool() {
       const blob = await res.blob();
       const asFile = new File([blob], `${sample.id}.jpg`, { type: blob.type });
       handleFileChange(asFile);
-      await runExtract(asFile, k);
+      await runExtract(asFile, colorsCount);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not load that sample");
     } finally {
@@ -220,8 +240,8 @@ export function ExtractTool() {
             <div className="flex items-center rounded-full border border-line">
               <button
                 type="button"
-                onClick={() => setColors(k - 1)}
-                disabled={k <= MIN_K}
+                onClick={() => nudge(-1)}
+                disabled={colorsValid && colorsCount <= MIN_K}
                 aria-label="One fewer color"
                 className="px-3 py-2 text-base leading-none text-muted transition-colors hover:text-foreground disabled:opacity-30"
               >
@@ -234,18 +254,15 @@ export function ExtractTool() {
                 min={MIN_K}
                 max={MAX_K}
                 value={kText}
-                onChange={(e) => {
-                  setKText(e.target.value);
-                  const parsed = Number(e.target.value);
-                  if (e.target.value !== "" && !Number.isNaN(parsed)) setK(clampK(parsed));
-                }}
-                onBlur={() => setColors(Number(kText))}
+                onChange={(e) => setKText(e.target.value)}
+                aria-invalid={!colorsValid}
+                aria-describedby={colorsValid ? undefined : "colors-count-hint"}
                 className="w-10 [appearance:textfield] bg-transparent text-center text-sm outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
               />
               <button
                 type="button"
-                onClick={() => setColors(k + 1)}
-                disabled={k >= MAX_K}
+                onClick={() => nudge(1)}
+                disabled={colorsValid && colorsCount >= MAX_K}
                 aria-label="One more color"
                 className="px-3 py-2 text-base leading-none text-muted transition-colors hover:text-foreground disabled:opacity-30"
               >
@@ -254,8 +271,8 @@ export function ExtractTool() {
             </div>
 
             <button
-              onClick={() => file && runExtract(file, k)}
-              disabled={!file || loading}
+              onClick={() => file && colorsValid && runExtract(file, colorsCount)}
+              disabled={!file || loading || !colorsValid}
               className="group relative w-full overflow-hidden rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background transition-opacity disabled:pointer-events-none disabled:opacity-35 sm:ml-auto sm:w-auto"
             >
               <span className="relative z-10">{loading ? "Extracting" : "Extract palette"}</span>
@@ -266,9 +283,14 @@ export function ExtractTool() {
             </button>
           </div>
 
-          <SamplePicker onPick={pickSample} busyId={busySample} disabled={loading} />
+          <SamplePicker onPick={pickSample} busyId={busySample} disabled={loading || !colorsValid} />
 
           <div role="status" aria-live="polite" className="min-h-6 pt-3 text-sm">
+            {!colorsValid && (
+              <p id="colors-count-hint" className="text-coral">
+                Enter a whole number between {MIN_K} and {MAX_K}.
+              </p>
+            )}
             {error && <p className="text-coral">{error}</p>}
             {loading && (
               <p className="flex items-center gap-2 text-muted">
