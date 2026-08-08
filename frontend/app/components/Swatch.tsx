@@ -41,6 +41,9 @@ export function Swatch({ swatch }: { swatch: SwatchType }) {
           className="absolute inset-0 transition-transform duration-[550ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
           style={{ backgroundColor: swatch.hex }}
         />
+        <span className="absolute inset-0 flex items-center justify-center bg-foreground/0 font-mono text-xs tracking-widest text-background/0 uppercase transition-colors duration-300 group-hover:bg-foreground/45 group-hover:text-background group-focus-visible:bg-foreground/45 group-focus-visible:text-background">
+          Copy
+        </span>
         <AnimatePresence>
           {copied && (
             <motion.span
