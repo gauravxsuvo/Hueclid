@@ -54,7 +54,7 @@ export function Header() {
       initial={{ opacity: 0, y: -16 }}
       animate={{ opacity: 1, y: visible ? 0 : "-100%" }}
       transition={{ duration: 0.35, ease: EASE }}
-      className={`fixed top-3 inset-x-3 z-50 mx-auto max-w-5xl border shadow-[0_18px_60px_rgba(0,0,0,0.12)] transition-[background-color,border-color,backdrop-filter,box-shadow,border-radius] duration-500 sm:top-4 sm:inset-x-4 dark:shadow-[0_18px_70px_rgba(0,0,0,0.35)] ${
+      className={`fixed top-3 inset-x-3 z-50 mx-auto max-w-5xl overflow-hidden border shadow-[0_18px_60px_rgba(0,0,0,0.12)] transition-[background-color,border-color,backdrop-filter,box-shadow,border-radius] duration-500 before:pointer-events-none before:absolute before:inset-0 before:bg-[linear-gradient(110deg,rgba(75,49,212,0.12),transparent_34%,rgba(216,65,42,0.12))] before:opacity-70 sm:top-4 sm:inset-x-4 dark:shadow-[0_18px_70px_rgba(0,0,0,0.35)] dark:before:bg-[linear-gradient(110deg,rgba(163,148,255,0.12),transparent_34%,rgba(255,124,94,0.10))] ${
         menuOpen ? "rounded-[1.75rem]" : "rounded-full"
       } ${
         scrolled || menuOpen
@@ -62,7 +62,7 @@ export function Header() {
           : "border-line bg-background/60 backdrop-blur-xl"
       }`}
     >
-      <div className="flex h-14 items-center justify-between px-4 sm:h-16 sm:px-6">
+      <div className="relative flex h-14 items-center justify-between px-4 sm:h-16 sm:px-6">
         <div className="flex min-w-0 items-center gap-8 lg:gap-12">
           <a href="#top" className="group flex shrink-0 items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -91,6 +91,7 @@ export function Header() {
                 href={link.href}
                 external={link.external}
                 className="text-sm font-medium"
+                variant="nav"
               >
                 {link.label}
               </HoverLink>
@@ -105,7 +106,7 @@ export function Header() {
             href={GITHUB_LINK.href}
             target="_blank"
             rel="noreferrer"
-            className="hidden rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-background transition-transform hover:scale-105 active:scale-95 sm:block"
+            className="hidden rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-background shadow-[0_10px_30px_rgba(0,0,0,0.12)] transition-[transform,box-shadow,background-color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:scale-[1.03] hover:shadow-[0_14px_34px_rgba(0,0,0,0.18)] active:scale-95 sm:block"
           >
             {GITHUB_LINK.label}
           </a>
