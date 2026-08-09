@@ -8,10 +8,13 @@ and each recovered color close (in dE00) to the region it came from.
 """
 
 from __future__ import annotations
+
 import io
+
 import numpy as np
 import pytest
 from PIL import Image
+
 from app.clustering.kmeans import extract_palette
 from app.color.deltae2000 import delta_e2000_matrix
 from app.color.srgb_lab import srgb_to_lab
