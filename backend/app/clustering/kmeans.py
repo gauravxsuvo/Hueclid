@@ -19,6 +19,28 @@ from app.color.srgb_lab import lab_to_srgb, linear_to_xyz, srgb_to_linear, xyz_t
 _RESIZE_LONG_EDGE = 512
 
 
+def _decode_rgb(image_bytes: bytes) -> Image.Image:
+    """Decode the upload to a flat RGB image.
+
+    Pillow's `.convert("RGB")` on an image with an alpha channel doesn't
+    composite, it just drops the alpha channel and keeps whatever RGB
+    values happen to be stored underneath each pixel. For a lot of real
+    PNGs (logos, icons, cutouts) that's black, so a fully transparent
+    background silently became a real, heavily-weighted "color" in the
+    output palette (issue #19). Compositing onto a white backing first
+    makes a transparent pixel contribute white, the same as it would
+    render in a browser over a light page, and a partially transparent
+    one blends toward white instead of keeping its hidden raw value.
+    """
+    img = Image.open(io.BytesIO(image_bytes))
+    has_alpha = img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info)
+    if has_alpha:
+        img = img.convert("RGBA")
+        backing = Image.new("RGBA", img.size, (255, 255, 255, 255))
+        img = Image.alpha_composite(backing, img)
+    return img.convert("RGB")
+
+
 def _resize_linear(linear_rgb: np.ndarray, target_long_edge: int) -> np.ndarray:
     """Resize an (H,W,3) linear-light float array, decoded before resampling
     so downscaling doesn't darken/desaturate (PLAN.md 2.4a preprocessing note).
@@ -45,7 +67,7 @@ def _to_hex(rgb_255: np.ndarray) -> str:
 
 
 def extract_palette(image_bytes: bytes, k: int = 5) -> dict:
-    img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    img = _decode_rgb(image_bytes)
     orig_w, orig_h = img.size
 
     srgb = np.asarray(img, dtype=np.float64) / 255.0

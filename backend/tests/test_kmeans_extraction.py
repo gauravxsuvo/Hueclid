@@ -95,3 +95,44 @@ def test_extract_palette_k_larger_than_bins_does_not_crash():
     assert result["k"] == 1
     assert len(result["palette"]) == 1
     assert result["palette"][0]["weight"] == pytest.approx(1.0)
+
+
+def test_extract_palette_composites_transparent_pixels_over_white():
+    """Regression test for #19.
+
+    A fully transparent PNG background stores (0, 0, 0, 0) here, the same
+    as many real logo/icon exports. Before the fix, converting straight to
+    RGB dropped the alpha channel and kept the underlying black, so the
+    invisible background came back as a dominant black swatch. It should
+    now be composited onto white instead, since that's what a viewer
+    actually sees.
+    """
+    arr = np.zeros((200, 200, 4), dtype=np.uint8)
+    arr[60:140, 60:140] = [220, 30, 30, 255]
+    img = Image.fromarray(arr, mode="RGBA")
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+
+    result = extract_palette(buf.getvalue(), k=3)
+
+    hexes = [swatch["hex"] for swatch in result["palette"]]
+    assert "#000000" not in hexes
+
+    background = max(result["palette"], key=lambda s: s["weight"])
+    assert background["hex"] == "#ffffff"
+
+
+def test_extract_palette_partial_transparency_blends_toward_white():
+    # A half-opaque red square over a transparent background should land
+    # roughly midway between red and white once composited, not keep the
+    # unmodified red RGB with its alpha silently discarded.
+    arr = np.zeros((100, 100, 4), dtype=np.uint8)
+    arr[:, :] = [220, 30, 30, 128]
+    img = Image.fromarray(arr, mode="RGBA")
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+
+    result = extract_palette(buf.getvalue(), k=1)
+    r, g, b = result["palette"][0]["rgb"]
+    assert r > 220  # blended toward white, not left at the raw 220
+    assert g > 30 and b > 30
