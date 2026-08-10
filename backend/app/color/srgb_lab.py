@@ -20,8 +20,16 @@ _SRGB_TO_XYZ = np.array(
 )
 _XYZ_TO_SRGB = np.linalg.inv(_SRGB_TO_XYZ)
 
-# D65 reference white.
+# D65 reference white. The ASTM E308 value, which is the one the sRGB
+# matrix above is built around -- its rows sum to exactly this, so sRGB
+# white lands on Lab (100, 0, 0). Note this is NOT the value CSS Color 4
+# uses (0.9504559, 1, 1.0890578, derived from the (0.3127, 0.3290)
+# chromaticity); they differ in the 5th decimal. Both are in wide use, but
+# mixing them within one pipeline puts a small cast on the neutral axis,
+# so this is the single definition every color space in this package
+# adapts to. See app/color/oklab.py for where that matters.
 _XN, _YN, _ZN = 0.95047, 1.00000, 1.08883
+D65_WHITE_XYZ = np.array([_XN, _YN, _ZN], dtype=np.float64)
 
 _LAB_EPS = 216.0 / 24389.0  # 0.008856...
 _LAB_KAPPA = 24389.0 / 27.0  # 903.296...
@@ -98,8 +106,8 @@ def srgb_to_lab(srgb_255: np.ndarray) -> np.ndarray:
     return xyz_to_lab(linear_to_xyz(srgb_to_linear(srgb)))
 
 
-def lab_to_srgb(lab: np.ndarray) -> np.ndarray:
-    """CIELAB -> uint8-range sRGB [0, 255].
+def xyz_to_srgb_gamut_mapped(xyz: np.ndarray) -> np.ndarray:
+    """CIE XYZ (D65) -> uint8-range sRGB [0, 255], gamut-mapped.
 
     In-gamut colors go through the matrix pipeline above (exact, and
     covered by the round-trip conformance tests). Colors that fall outside
@@ -111,19 +119,18 @@ def lab_to_srgb(lab: np.ndarray) -> np.ndarray:
     so it's used here rather than a hand-rolled version (see PLAN.md 2.7).
     Not coloraide's own default `fit()` method, hence passing it explicitly.
 
-    Hands coloraide this module's own XYZ (via lab_to_xyz above), constructed
-    as its "xyz-d65" space, rather than handing it (L, a, b) directly into
-    a Lab space of coloraide's own. coloraide's plain "lab" space is the
-    CSS-spec space, white-pointed at D50, while this whole module is D65
-    throughout (see xyz_to_lab/lab_to_xyz above) -- passing D65 coordinates
+    Takes XYZ rather than (L, a, b) so that every color space in this
+    package shares one gamut-mapping implementation, and so that coloraide
+    is handed coordinates in a space whose white point is unambiguous.
+    coloraide's plain "lab" space is the CSS-spec space, white-pointed at
+    D50, while this package is D65 throughout -- passing D65 coordinates
     into "lab" silently reinterprets them as D50, a wrong starting color,
     not just a rounding error, caught by color-conformance review before
-    this shipped. Going through this module's own XYZ instead of even
+    this shipped. Going through this package's own XYZ instead of even
     coloraide's own (correct) "lab-d65" space avoids relying on two
-    independently-computed Lab-to-XYZ conversions agreeing with each other.
+    independently-computed conversions agreeing with each other.
     """
-    lab = np.asarray(lab, dtype=np.float64)
-    xyz = lab_to_xyz(lab)
+    xyz = np.asarray(xyz, dtype=np.float64)
     linear = xyz_to_linear(xyz)
     # A tolerance, not an exact 0/1 boundary: colors that are in gamut but
     # land a float64 epsilon past 0 or 1 after the matrix/cbrt chain above
@@ -144,3 +151,12 @@ def lab_to_srgb(lab: np.ndarray) -> np.ndarray:
         srgb = flat_srgb.reshape(srgb.shape)
 
     return np.clip(srgb, 0.0, 1.0) * 255.0
+
+
+def lab_to_srgb(lab: np.ndarray) -> np.ndarray:
+    """CIELAB -> uint8-range sRGB [0, 255], gamut-mapped, not hard-clipped.
+
+    See `xyz_to_srgb_gamut_mapped` for what happens to out-of-gamut colors.
+    """
+    lab = np.asarray(lab, dtype=np.float64)
+    return xyz_to_srgb_gamut_mapped(lab_to_xyz(lab))
