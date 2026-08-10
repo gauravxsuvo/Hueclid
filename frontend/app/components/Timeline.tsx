@@ -50,7 +50,7 @@ const STATUS_LABEL: Record<Milestone["status"], string> = {
    reveal. The roadmap text should remain readable once a visitor has
    scrolled to it, regardless of pointer or keyboard state. */
 const PLANNED_CLASSES =
-  "opacity-70 transition-opacity duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:opacity-100 focus-within:opacity-100";
+  "transition-opacity duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] sm:opacity-70 hover:opacity-100 focus-within:opacity-100";
 
 function Node({
   milestone,
@@ -64,6 +64,14 @@ function Node({
   const reduce = useReducedMotion();
   const planned = milestone.status === "planned";
   const base = reduce ? 0 : index * 0.04;
+  const nodeColor =
+    milestone.status === "released"
+      ? "var(--violet)"
+      : milestone.status === "active"
+        ? "var(--coral)"
+        : index === 2
+          ? "var(--teal)"
+          : "var(--amber)";
 
   return (
     <div
@@ -74,17 +82,11 @@ function Node({
       <div className="flex justify-center pt-2">
         <motion.span
           aria-hidden
-          initial={{ scale: 0 }}
-          whileInView={{ scale: 1 }}
+          initial={{ scale: 0, backgroundColor: planned ? "var(--line-strong)" : nodeColor }}
+          whileInView={{ scale: 1, backgroundColor: nodeColor }}
           viewport={{ once: true, margin: "-12% 0px -12% 0px" }}
           transition={{ duration: reduce ? 0 : 0.7, ease: EASE, delay: base }}
-          className={`relative block h-3.5 w-3.5 rounded-full border-[3px] border-background ${
-            milestone.status === "released"
-              ? "bg-violet"
-              : milestone.status === "active"
-                ? "bg-coral"
-                : "bg-line-strong"
-          }`}
+          className="relative block h-3.5 w-3.5 rounded-full border-[3px] border-background"
         >
           {milestone.status === "active" && (
             <motion.span
