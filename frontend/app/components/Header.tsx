@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "framer-motion";
+import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { EASE } from "./motion";
 import { HoverLink } from "./HoverLink";
 import { ThemeToggle } from "./ThemeToggle";
@@ -54,9 +54,7 @@ export function Header() {
       initial={{ opacity: 0, y: -16 }}
       animate={{ opacity: 1, y: visible ? 0 : "-100%" }}
       transition={{ duration: 0.35, ease: EASE }}
-      className={`fixed top-3 inset-x-3 z-50 mx-auto max-w-5xl overflow-hidden border shadow-[0_18px_60px_rgba(0,0,0,0.12)] transition-[background-color,border-color,backdrop-filter,box-shadow,border-radius] duration-500 before:pointer-events-none before:absolute before:inset-0 before:bg-[linear-gradient(110deg,rgba(75,49,212,0.12),transparent_34%,rgba(216,65,42,0.12))] before:opacity-70 sm:top-4 sm:inset-x-4 dark:shadow-[0_18px_70px_rgba(0,0,0,0.35)] dark:before:bg-[linear-gradient(110deg,rgba(163,148,255,0.12),transparent_34%,rgba(255,124,94,0.10))] ${
-        menuOpen ? "rounded-[1.75rem]" : "rounded-full"
-      } ${
+      className={`fixed top-3 inset-x-3 z-50 mx-auto max-w-5xl overflow-hidden rounded-[1.75rem] border shadow-[0_18px_60px_rgba(0,0,0,0.12)] transition-[background-color,border-color,backdrop-filter,box-shadow] duration-500 before:pointer-events-none before:absolute before:inset-0 before:bg-[linear-gradient(110deg,rgba(75,49,212,0.12),transparent_34%,rgba(216,65,42,0.12))] before:opacity-70 sm:top-4 sm:inset-x-4 md:rounded-full dark:shadow-[0_18px_70px_rgba(0,0,0,0.35)] dark:before:bg-[linear-gradient(110deg,rgba(163,148,255,0.12),transparent_34%,rgba(255,124,94,0.10))] ${
         scrolled || menuOpen
           ? "border-line bg-background/80 backdrop-blur-xl"
           : "border-line bg-background/60 backdrop-blur-xl"
@@ -121,38 +119,38 @@ export function Header() {
           >
             <span aria-hidden className="relative block h-[10px] w-[18px]">
               <motion.span
-                className="absolute left-0 block h-px w-full bg-current"
-                animate={menuOpen ? { top: 5, rotate: 45 } : { top: 0, rotate: 0 }}
-                transition={{ duration: 0.35, ease: EASE }}
+                className="absolute top-0 left-0 block h-px w-full origin-center bg-current"
+                animate={menuOpen ? { y: 4.5, rotate: 45 } : { y: 0, rotate: 0 }}
+                transition={{ duration: 0.25, ease: EASE }}
               />
               <motion.span
-                className="absolute left-0 block h-px w-full bg-current"
-                animate={menuOpen ? { top: 5, rotate: -45 } : { top: 9, rotate: 0 }}
-                transition={{ duration: 0.35, ease: EASE }}
+                className="absolute bottom-0 left-0 block h-px w-full origin-center bg-current"
+                animate={menuOpen ? { y: -4.5, rotate: -45 } : { y: 0, rotate: 0 }}
+                transition={{ duration: 0.25, ease: EASE }}
               />
             </span>
           </button>
         </div>
       </div>
 
-      <AnimatePresence initial={false}>
-        {menuOpen && (
+      <div
+        className={`grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] md:hidden ${
+          menuOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        }`}
+      >
+        <div className="min-h-0 overflow-hidden">
           <motion.nav
             id="mobile-nav"
-            key="mobile-nav"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.45, ease: EASE }}
-            className="overflow-hidden border-t border-line md:hidden"
+            aria-hidden={!menuOpen}
+            inert={!menuOpen}
+            animate={menuOpen ? { opacity: 1, y: 0 } : { opacity: 0, y: -8 }}
+            transition={{ duration: 0.25, ease: EASE }}
+            className="border-t border-line"
           >
             <ul className="flex flex-col px-5 py-2">
-              {LINKS.map((link, i) => (
-                <motion.li
+              {LINKS.map((link) => (
+                <li
                   key={link.href}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.45, ease: EASE, delay: 0.06 + i * 0.05 }}
                   className="border-b border-line last:border-b-0"
                 >
                   <HoverLink
@@ -163,12 +161,12 @@ export function Header() {
                   >
                     {link.label}
                   </HoverLink>
-                </motion.li>
+                </li>
               ))}
             </ul>
           </motion.nav>
-        )}
-      </AnimatePresence>
+        </div>
+      </div>
     </motion.header>
   );
 }
