@@ -52,6 +52,9 @@ export const metadata: Metadata = {
 const THEME_INIT_SCRIPT = `
 (function () {
   try {
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
     if (localStorage.getItem("hueclid-theme") === "dark") {
       document.documentElement.classList.add("dark");
     }

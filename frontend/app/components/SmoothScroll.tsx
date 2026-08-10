@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode } from "react";
 import { ReactLenis } from "lenis/react";
 import { useReducedMotion } from "framer-motion";
 
@@ -12,30 +12,16 @@ import { useReducedMotion } from "framer-motion";
    extra wiring.
 
    Two guards matter here. First, reduced motion: a visitor who has
-   asked the system to cut animation should not have their scrolling
-   reinterpreted, so Lenis is skipped entirely and the browser's own
-   scrolling is used. Second, the CSS `scroll-behavior: smooth` in
+   asked the system to cut animation should not have wheel smoothing
+   applied. Second, the CSS `scroll-behavior: smooth` in
    globals.css fights Lenis (both try to own anchor-link jumps); the
    `lenis` class Lenis adds to <html> resets that via lenis's own
    stylesheet, imported below. */
 export function SmoothScroll({ children }: { children: ReactNode }) {
   const reduce = useReducedMotion();
 
-  /* useReducedMotion reads a media query, so it is null on the server
-     and resolves on the client. Deferring the branch to an effect
-     keeps the server and first client render identical: both mount
-     the plain wrapper, and Lenis only turns on once we know motion is
-     wanted. */
-  const [ready, setReady] = useState(false);
-  useEffect(() => {
-    const frame = requestAnimationFrame(() => setReady(true));
-    return () => cancelAnimationFrame(frame);
-  }, []);
-
-  if (!ready || reduce) return <>{children}</>;
-
   return (
-    <ReactLenis root options={{ duration: 1.1, smoothWheel: true }}>
+    <ReactLenis root options={{ duration: 1.1, smoothWheel: !reduce }}>
       {children}
     </ReactLenis>
   );

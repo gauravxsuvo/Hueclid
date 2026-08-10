@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { useLenis } from "lenis/react";
 import { extractPalette, type ExtractResult } from "../lib/api";
 import { Swatch } from "./Swatch";
 import { SamplePicker, type Sample } from "./SamplePicker";
@@ -44,6 +45,8 @@ export function ExtractTool() {
   const [copiedAll, setCopiedAll] = useState(false);
   const [busySample, setBusySample] = useState<string | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
+  const shouldScrollToResult = useRef(false);
+  const lenis = useLenis();
 
   const colorsValid = isValidColorsCount(kText);
   const colorsCount = Number(kText);
@@ -65,15 +68,33 @@ export function ExtractTool() {
   }, []);
 
   useEffect(() => {
-    if (!result) return;
+    if (!result || !shouldScrollToResult.current) return;
+    shouldScrollToResult.current = false;
 
-    requestAnimationFrame(() => {
-      resultRef.current?.scrollIntoView({
-        behavior: reduce ? "auto" : "smooth",
-        block: "start",
+    let scrollFrame = 0;
+    const layoutFrame = requestAnimationFrame(() => {
+      scrollFrame = requestAnimationFrame(() => {
+        const target = resultRef.current;
+        if (!target) return;
+
+        if (lenis) {
+          lenis.resize();
+          lenis.scrollTo(target, {
+            offset: -96,
+            immediate: Boolean(reduce),
+            duration: reduce ? 0 : 1.1,
+          });
+        } else {
+          target.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+        }
       });
     });
-  }, [reduce, result]);
+
+    return () => {
+      cancelAnimationFrame(layoutFrame);
+      cancelAnimationFrame(scrollFrame);
+    };
+  }, [lenis, reduce, result]);
 
   function handleFileChange(selected: File | null) {
     setFile(selected);
@@ -127,6 +148,7 @@ export function ExtractTool() {
     setError(null);
     try {
       const data = await extractPalette(target, colors);
+      shouldScrollToResult.current = true;
       setResult(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -350,7 +372,7 @@ export function ExtractTool() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: reduce ? 0 : 0.7, ease: EASE }}
-            className="scroll-mt-[42vh] lg:col-span-12"
+            className="scroll-mt-24 lg:col-span-12"
           >
             <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 border-t border-line pt-6">
               <h2 className="text-xl font-medium tracking-tight">Your palette</h2>
