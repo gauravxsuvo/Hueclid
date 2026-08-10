@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "framer-motion";
+import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { EASE } from "./motion";
 import { HoverLink } from "./HoverLink";
 import { ThemeToggle } from "./ThemeToggle";
@@ -13,6 +13,9 @@ const LINKS = [
   { href: "#roadmap", label: "Roadmap" },
   { href: "https://github.com/gauravxsuvo/Hueclid", label: "GitHub", external: true },
 ];
+
+const PRIMARY_LINKS = LINKS.slice(0, -1);
+const GITHUB_LINK = LINKS[LINKS.length - 1];
 
 export function Header() {
   const { scrollY } = useScroll();
@@ -50,49 +53,61 @@ export function Header() {
       }}
       initial={{ opacity: 0, y: -16 }}
       animate={{ opacity: 1, y: visible ? 0 : "-100%" }}
-      transition={{ duration: 0.6, ease: EASE }}
-      className={`sticky top-0 z-50 transition-[background-color,border-color,backdrop-filter] duration-500 ${
+      transition={{ duration: 0.35, ease: EASE }}
+      className={`fixed top-3 inset-x-3 z-50 mx-auto max-w-5xl overflow-hidden rounded-[1.75rem] border shadow-[0_18px_60px_rgba(0,0,0,0.12)] transition-[background-color,border-color,backdrop-filter,box-shadow] duration-500 before:pointer-events-none before:absolute before:inset-0 before:bg-[linear-gradient(110deg,rgba(75,49,212,0.12),transparent_34%,rgba(216,65,42,0.12))] before:opacity-70 sm:top-4 sm:inset-x-4 md:rounded-full dark:shadow-[0_18px_70px_rgba(0,0,0,0.35)] dark:before:bg-[linear-gradient(110deg,rgba(163,148,255,0.12),transparent_34%,rgba(255,124,94,0.10))] ${
         scrolled || menuOpen
-          ? "border-b border-line bg-background/80 backdrop-blur-xl"
-          : "border-b border-transparent bg-transparent"
+          ? "border-line bg-background/80 backdrop-blur-xl"
+          : "border-line bg-background/60 backdrop-blur-xl"
       }`}
     >
-      <div className="shell flex items-center justify-between py-4">
-        <a href="#top" className="group flex items-center gap-2.5">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/icon.svg"
-            alt=""
-            width={22}
-            height={22}
-            className="transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:rotate-90 dark:hidden"
-          />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/icon-dark.svg"
-            alt=""
-            width={22}
-            height={22}
-            className="hidden transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:rotate-90 dark:block"
-          />
-          <span className="text-[15px] font-semibold tracking-tight">Hueclid</span>
-        </a>
+      <div className="relative flex h-14 items-center justify-between px-4 sm:h-16 sm:px-6">
+        <div className="flex min-w-0 items-center gap-8 lg:gap-12">
+          <a href="#top" className="group flex shrink-0 items-center gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/icon.svg"
+              alt=""
+              width={28}
+              height={28}
+              className="transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:rotate-90 dark:hidden"
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/icon-dark.svg"
+              alt=""
+              width={28}
+              height={28}
+              className="hidden transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:rotate-90 dark:block"
+            />
+            <span className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">Hueclid</span>
+          </a>
 
-        <div className="flex items-center gap-2 md:gap-6">
-          <nav className="hidden items-center gap-6 md:flex lg:gap-7">
-            {LINKS.map((link) => (
+          <nav className="hidden items-center gap-7 md:flex lg:gap-8">
+            {PRIMARY_LINKS.map((link) => (
               <HoverLink
                 key={link.href}
                 href={link.href}
                 external={link.external}
-                className="text-sm"
+                className="text-sm font-medium"
+                variant="nav"
               >
                 {link.label}
               </HoverLink>
             ))}
           </nav>
+        </div>
 
+        <div className="flex shrink-0 items-center gap-2 sm:gap-4">
           <ThemeToggle />
+
+          <a
+            href={GITHUB_LINK.href}
+            target="_blank"
+            rel="noreferrer"
+            className="hidden rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-background shadow-[0_10px_30px_rgba(0,0,0,0.12)] transition-[transform,box-shadow,background-color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:scale-[1.03] hover:shadow-[0_14px_34px_rgba(0,0,0,0.18)] active:scale-95 md:block"
+          >
+            {GITHUB_LINK.label}
+          </a>
 
           <button
             type="button"
@@ -104,38 +119,38 @@ export function Header() {
           >
             <span aria-hidden className="relative block h-[10px] w-[18px]">
               <motion.span
-                className="absolute left-0 block h-px w-full bg-current"
-                animate={menuOpen ? { top: 5, rotate: 45 } : { top: 0, rotate: 0 }}
-                transition={{ duration: 0.35, ease: EASE }}
+                className="absolute top-0 left-0 block h-px w-full origin-center bg-current"
+                animate={menuOpen ? { y: 4.5, rotate: 45 } : { y: 0, rotate: 0 }}
+                transition={{ duration: 0.25, ease: EASE }}
               />
               <motion.span
-                className="absolute left-0 block h-px w-full bg-current"
-                animate={menuOpen ? { top: 5, rotate: -45 } : { top: 9, rotate: 0 }}
-                transition={{ duration: 0.35, ease: EASE }}
+                className="absolute bottom-0 left-0 block h-px w-full origin-center bg-current"
+                animate={menuOpen ? { y: -4.5, rotate: -45 } : { y: 0, rotate: 0 }}
+                transition={{ duration: 0.25, ease: EASE }}
               />
             </span>
           </button>
         </div>
       </div>
 
-      <AnimatePresence initial={false}>
-        {menuOpen && (
+      <div
+        className={`grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] md:hidden ${
+          menuOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        }`}
+      >
+        <div className="min-h-0 overflow-hidden">
           <motion.nav
             id="mobile-nav"
-            key="mobile-nav"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.45, ease: EASE }}
-            className="overflow-hidden border-t border-line md:hidden"
+            aria-hidden={!menuOpen}
+            inert={!menuOpen}
+            animate={menuOpen ? { opacity: 1, y: 0 } : { opacity: 0, y: -8 }}
+            transition={{ duration: 0.25, ease: EASE }}
+            className="border-t border-line"
           >
             <ul className="flex flex-col px-5 py-2">
-              {LINKS.map((link, i) => (
-                <motion.li
+              {LINKS.map((link) => (
+                <li
                   key={link.href}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.45, ease: EASE, delay: 0.06 + i * 0.05 }}
                   className="border-b border-line last:border-b-0"
                 >
                   <HoverLink
@@ -146,12 +161,12 @@ export function Header() {
                   >
                     {link.label}
                   </HoverLink>
-                </motion.li>
+                </li>
               ))}
             </ul>
           </motion.nav>
-        )}
-      </AnimatePresence>
+        </div>
+      </div>
     </motion.header>
   );
 }

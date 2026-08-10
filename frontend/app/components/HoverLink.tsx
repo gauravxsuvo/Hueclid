@@ -16,14 +16,33 @@ export function HoverLink({
   external,
   onClick,
   className = "",
+  variant = "default",
   children,
 }: {
   href: string;
   external?: boolean;
   onClick?: () => void;
   className?: string;
+  variant?: "default" | "nav";
   children: ReactNode;
 }) {
+  if (variant === "nav") {
+    return (
+      <a
+        href={href}
+        onClick={onClick}
+        {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
+        className={`group relative self-center overflow-hidden rounded-full px-3.5 py-2 text-muted transition-[color,background-color,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-foreground/[0.06] hover:text-foreground focus-visible:bg-foreground/[0.06] focus-visible:text-foreground dark:hover:bg-foreground/[0.08] dark:focus-visible:bg-foreground/[0.08] ${className}`}
+      >
+        <span
+          aria-hidden
+          className="absolute inset-x-3 bottom-1 h-px origin-center scale-x-0 rounded-full bg-gradient-to-r from-violet via-plum to-coral transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-x-100 group-focus-visible:scale-x-100"
+        />
+        <span className="relative z-10 leading-none">{children}</span>
+      </a>
+    );
+  }
+
   return (
     <a
       href={href}

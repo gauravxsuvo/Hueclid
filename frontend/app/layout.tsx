@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
+import "lenis/dist/lenis.css";
+import { SmoothScroll } from "./components/SmoothScroll";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -50,6 +52,9 @@ export const metadata: Metadata = {
 const THEME_INIT_SCRIPT = `
 (function () {
   try {
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
     if (localStorage.getItem("hueclid-theme") === "dark") {
       document.documentElement.classList.add("dark");
     }
@@ -89,7 +94,7 @@ export default function RootLayout({
           className="pointer-events-none fixed inset-0 z-[70] opacity-[var(--grain-opacity)] mix-blend-overlay"
           style={{ backgroundImage: GRAIN }}
         />
-        {children}
+        <SmoothScroll>{children}</SmoothScroll>
       </body>
     </html>
   );

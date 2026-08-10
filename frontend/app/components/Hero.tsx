@@ -95,7 +95,7 @@ export function Hero() {
     <section id="top" className="relative overflow-hidden">
       <AmbientField />
 
-      <div className="shell relative pt-8 pb-14 sm:pt-14 sm:pb-16 lg:pt-20">
+      <div className="shell relative pt-28 pb-14 sm:pt-32 sm:pb-16 lg:pt-36">
         <div className="grid items-start gap-10 lg:grid-cols-12 lg:gap-14">
           <div className="lg:col-span-6 xl:col-span-5">
             <motion.div

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { useLenis } from "lenis/react";
 import { extractPalette, type ExtractResult } from "../lib/api";
 import { Swatch } from "./Swatch";
 import { SamplePicker, type Sample } from "./SamplePicker";
@@ -43,6 +44,9 @@ export function ExtractTool() {
   const [isDragging, setIsDragging] = useState(false);
   const [copiedAll, setCopiedAll] = useState(false);
   const [busySample, setBusySample] = useState<string | null>(null);
+  const resultRef = useRef<HTMLDivElement | null>(null);
+  const shouldScrollToResult = useRef(false);
+  const lenis = useLenis();
 
   const colorsValid = isValidColorsCount(kText);
   const colorsCount = Number(kText);
@@ -62,6 +66,35 @@ export function ExtractTool() {
       if (previewRef.current) URL.revokeObjectURL(previewRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (!result || !shouldScrollToResult.current) return;
+    shouldScrollToResult.current = false;
+
+    let scrollFrame = 0;
+    const layoutFrame = requestAnimationFrame(() => {
+      scrollFrame = requestAnimationFrame(() => {
+        const target = resultRef.current;
+        if (!target) return;
+
+        if (lenis) {
+          lenis.resize();
+          lenis.scrollTo(target, {
+            offset: -96,
+            immediate: Boolean(reduce),
+            duration: reduce ? 0 : 1.1,
+          });
+        } else {
+          target.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+        }
+      });
+    });
+
+    return () => {
+      cancelAnimationFrame(layoutFrame);
+      cancelAnimationFrame(scrollFrame);
+    };
+  }, [lenis, reduce, result]);
 
   function handleFileChange(selected: File | null) {
     setFile(selected);
@@ -115,6 +148,7 @@ export function ExtractTool() {
     setError(null);
     try {
       const data = await extractPalette(target, colors);
+      shouldScrollToResult.current = true;
       setResult(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -170,45 +204,64 @@ export function ExtractTool() {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border border-dashed px-4 py-10 text-center transition-colors duration-300 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-4 has-[:focus-visible]:outline-foreground sm:gap-4 sm:px-6 sm:py-14 ${
+            className={`relative cursor-pointer overflow-hidden rounded-xl border border-dashed text-center transition-colors duration-300 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-4 has-[:focus-visible]:outline-foreground ${
+              previewUrl
+                ? "block p-0"
+                : "flex min-h-52 flex-col items-center justify-center px-4 py-8 sm:min-h-56 sm:px-6"
+            } ${
               isDragging
                 ? "border-violet bg-violet/5 text-foreground"
                 : "border-line-strong text-muted hover:border-foreground/45 hover:text-foreground"
             }`}
           >
-            <motion.svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-hidden
-              animate={isDragging && !reduce ? { y: [-3, 3, -3] } : { y: 0 }}
-              transition={{ duration: 1.2, repeat: isDragging ? Infinity : 0 }}
-            >
-              <path
-                d="M12 16V4m0 0-4 4m4-4 4 4M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"
-                stroke="currentColor"
-                strokeWidth="1.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </motion.svg>
             <input
+              id="image-upload"
               type="file"
               accept={VALID_FILE_TYPES.join(",")}
               className="sr-only"
               onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
             />
-            <span className="text-sm break-all">
-              {file ? file.name : "Drop an image here, or click to choose one"}
-            </span>
-            <span className="font-mono text-[10px] tracking-[0.18em] text-faint uppercase">
-              PNG &middot; JPEG &middot; WEBP
-            </span>
+            {previewUrl ? (
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={previewUrl}
+                  alt="Selected preview"
+                  className="block max-h-64 w-full object-contain"
+                />
+                <span className="absolute inset-x-0 bottom-0 bg-background/70 px-4 py-2 text-xs text-muted backdrop-blur-md">
+                  Click or drop to replace
+                </span>
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center gap-3 sm:gap-4">
+                <motion.svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden
+                  animate={isDragging && !reduce ? { y: [-3, 3, -3] } : { y: 0 }}
+                  transition={{ duration: 1.2, repeat: isDragging ? Infinity : 0 }}
+                >
+                  <path
+                    d="M12 16V4m0 0-4 4m4-4 4 4M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </motion.svg>
+                <span className="text-sm">Drop an image here, or click to choose one</span>
+                <span className="font-mono text-[10px] tracking-[0.18em] text-faint uppercase">
+                  PNG &middot; JPEG &middot; WEBP
+                </span>
+              </div>
+            )}
           </label>
 
           <AnimatePresence initial={false}>
-            {previewUrl && (
+            {file && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
@@ -216,12 +269,15 @@ export function ExtractTool() {
                 transition={{ duration: reduce ? 0 : 0.5, ease: EASE }}
                 className="overflow-hidden"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={previewUrl}
-                  alt="Selected preview"
-                  className="mt-4 max-h-64 w-full rounded-xl object-contain"
-                />
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-background/35 px-4 py-3">
+                  <p className="min-w-0 flex-1 truncate text-sm text-muted">{file.name}</p>
+                  <label
+                    htmlFor="image-upload"
+                    className="cursor-pointer rounded-full border border-line px-3.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-line-strong"
+                  >
+                    Replace image
+                  </label>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -311,11 +367,12 @@ export function ExtractTool() {
       <AnimatePresence>
         {result && (
           <motion.div
+            ref={resultRef}
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: reduce ? 0 : 0.7, ease: EASE }}
-            className="lg:col-span-12"
+            className="scroll-mt-24 lg:col-span-12"
           >
             <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 border-t border-line pt-6">
               <h2 className="text-xl font-medium tracking-tight">Your palette</h2>
