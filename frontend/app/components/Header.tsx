@@ -106,7 +106,7 @@ export function Header() {
             href={GITHUB_LINK.href}
             target="_blank"
             rel="noreferrer"
-            className="hidden rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-background shadow-[0_10px_30px_rgba(0,0,0,0.12)] transition-[transform,box-shadow,background-color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:scale-[1.03] hover:shadow-[0_14px_34px_rgba(0,0,0,0.18)] active:scale-95 sm:block"
+            className="hidden rounded-full bg-foreground px-5 py-2.5 text-sm font-semibold text-background shadow-[0_10px_30px_rgba(0,0,0,0.12)] transition-[transform,box-shadow,background-color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:scale-[1.03] hover:shadow-[0_14px_34px_rgba(0,0,0,0.18)] active:scale-95 md:block"
           >
             {GITHUB_LINK.label}
           </a>
