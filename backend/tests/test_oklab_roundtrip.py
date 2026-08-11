@@ -81,7 +81,12 @@ def test_shapes_are_preserved_and_batching_matches_elementwise():
     batched = srgb_to_oklab(batch)
     assert batched.shape == (4, 7, 3)
     flat = np.stack([srgb_to_oklab(c) for c in batch.reshape(-1, 3)]).reshape(4, 7, 3)
-    np.testing.assert_allclose(batched, flat, atol=0.0)
+    # Not atol=0.0: bit-identical output between the batched-shape and
+    # elementwise paths isn't a guarantee NumPy/BLAS make, just what
+    # happens to hold today for a contraction this small. A tight
+    # tolerance still catches a real vectorization bug without pinning
+    # the test to that implementation detail.
+    np.testing.assert_allclose(batched, flat, atol=1e-15)
 
 
 def test_delta_e_ok_is_a_metric():

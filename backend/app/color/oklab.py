@@ -100,7 +100,13 @@ _OKLAB_TO_LMS = np.linalg.inv(_LMS_TO_OKLAB)
 
 
 def xyz_to_oklab(xyz: np.ndarray) -> np.ndarray:
-    """CIE XYZ (D65, Y in [0, 1]) -> Oklab. L is in [0, 1], not [0, 100]."""
+    """CIE XYZ (D65) -> Oklab. L is in [0, 1], not [0, 100].
+
+    Y is typically in [0, 1], but that is not an enforced precondition:
+    the signed cube root below keeps this defined (and invertible) for
+    Y outside that range and for XYZ with negative components, both of
+    which the property tests in test_oklab_roundtrip.py exercise directly.
+    """
     xyz = np.asarray(xyz, dtype=np.float64)
     lms = xyz @ _XYZ_TO_LMS.T
     # np.cbrt, not `** (1/3)`: LMS can go slightly negative for colors

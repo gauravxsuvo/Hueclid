@@ -21,8 +21,9 @@ _SRGB_TO_XYZ = np.array(
 _XYZ_TO_SRGB = np.linalg.inv(_SRGB_TO_XYZ)
 
 # D65 reference white. The ASTM E308 value, which is the one the sRGB
-# matrix above is built around -- its rows sum to exactly this, so sRGB
-# white lands on Lab (100, 0, 0). Note this is NOT the value CSS Color 4
+# matrix above is built around -- its rows sum to this (up to the
+# matrix's own 7-digit rounding, ~1e-7), so sRGB white lands within that
+# rounding of Lab (100, 0, 0). Note this is NOT the value CSS Color 4
 # uses (0.9504559, 1, 1.0890578, derived from the (0.3127, 0.3290)
 # chromaticity); they differ in the 5th decimal. Both are in wide use, but
 # mixing them within one pipeline puts a small cast on the neutral axis,
