@@ -69,3 +69,40 @@ jobs:
             NEXT_PUBLIC_API_BASE_URL=https://hueclid-api.cinexg.com
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+  # Portway redeploys off its own webhook on this same push (see the repo's
+  # webhook settings -- panel.cinexg.com/api/hooks/github/{hueclid,hueclid-api},
+  # subscribed to `push` only), independently of anything in this workflow.
+  # That webhook has no way to write back to GitHub's Deployments API, so
+  # without this job the Deployments panel goes stale after the first
+  # manually-recorded entry while the site keeps redeploying underneath it.
+  # Only on `push`, not `release`: a release publish doesn't cause a new
+  # Portway redeploy (the webhook only fires on push), so recording one
+  # here would claim a deploy that didn't happen.
+  record-deployment:
+    needs: [backend, frontend]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      deployments: write
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const deployment = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.sha,
+              environment: "production",
+              auto_merge: false,
+              required_contexts: [],
+              description: "Images published to GHCR; Portway redeploys via its own webhook.",
+            });
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: deployment.data.id,
+              state: "success",
+              description: "Deployed",
+              environment_url: "https://hueclid.cinexg.com",
+            });
