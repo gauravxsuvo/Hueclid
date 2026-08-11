@@ -97,6 +97,11 @@ export function ExtractTool() {
   }, [lenis, reduce, result]);
 
   function handleFileChange(selected: File | null) {
+    if (selected && !VALID_FILE_TYPES.includes(selected.type)) {
+      setError("Invalid file type. Please upload a PNG, JPEG, or WEBP.");
+      return;
+    }
+
     setFile(selected);
     setResult(null);
     setError(null);
@@ -132,11 +137,7 @@ export function ExtractTool() {
 
     const droppedFile = e.dataTransfer.files?.[0];
     if (droppedFile) {
-      if (VALID_FILE_TYPES.includes(droppedFile.type)) {
-        handleFileChange(droppedFile);
-      } else {
-        setError("Invalid file type. Please upload a PNG, JPEG, or WEBP.");
-      }
+      handleFileChange(droppedFile);
     }
   }
 
