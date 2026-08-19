@@ -70,7 +70,10 @@ export function Header() {
   return (
     <motion.header
       ref={headerRef}
-      onFocus={() => setFocusInside(true)}
+      onFocus={(e) => {
+        const target = e.target;
+        setFocusInside(target instanceof HTMLElement && target.matches(":focus-visible"));
+      }}
       onBlur={(e) => {
         if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocusInside(false);
       }}
