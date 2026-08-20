@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useLenis } from "lenis/react";
-import { extractPalette, type ExtractResult } from "../lib/api";
+import { extractPalette, messageFromUnknownError, type ExtractResult } from "../lib/api";
 import { Swatch } from "./Swatch";
 import { SamplePicker, type Sample } from "./SamplePicker";
 import { EASE } from "./motion";
@@ -152,7 +152,7 @@ export function ExtractTool() {
       shouldScrollToResult.current = true;
       setResult(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(messageFromUnknownError(err));
     } finally {
       setLoading(false);
     }
@@ -169,7 +169,7 @@ export function ExtractTool() {
       handleFileChange(asFile);
       await runExtract(asFile, colorsCount);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not load that sample");
+      setError(messageFromUnknownError(err, "Could not load that sample"));
     } finally {
       setBusySample(null);
     }
