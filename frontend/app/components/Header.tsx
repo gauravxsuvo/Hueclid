@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { EASE } from "./motion";
 import { HoverLink } from "./HoverLink";
@@ -19,11 +19,33 @@ const GITHUB_LINK = LINKS[LINKS.length - 1];
 
 export function Header() {
   const { scrollY } = useScroll();
+  const headerRef = useRef<HTMLElement>(null);
   const lastY = useRef(0);
   const [scrolled, setScrolled] = useState(false);
   const [pinned, setPinned] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [focusInside, setFocusInside] = useState(false);
+  const [hiddenY, setHiddenY] = useState(-100);
+
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+
+    const measureHiddenPosition = () => {
+      const top = Number.parseFloat(window.getComputedStyle(header).top) || 0;
+      setHiddenY(-(header.offsetHeight + top));
+    };
+
+    measureHiddenPosition();
+    const observer = new ResizeObserver(measureHiddenPosition);
+    observer.observe(header);
+    window.addEventListener("resize", measureHiddenPosition);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measureHiddenPosition);
+    };
+  }, []);
 
   useMotionValueEvent(scrollY, "change", (y) => {
     setScrolled(y > 24);
@@ -47,12 +69,16 @@ export function Header() {
 
   return (
     <motion.header
-      onFocus={() => setFocusInside(true)}
+      ref={headerRef}
+      onFocus={(e) => {
+        const target = e.target;
+        setFocusInside(target instanceof HTMLElement && target.matches(":focus-visible"));
+      }}
       onBlur={(e) => {
         if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocusInside(false);
       }}
       initial={{ opacity: 0, y: -16 }}
-      animate={{ opacity: 1, y: visible ? 0 : "-100%" }}
+      animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : hiddenY }}
       transition={{ duration: 0.35, ease: EASE }}
       className={`fixed top-3 inset-x-3 z-50 mx-auto max-w-5xl overflow-hidden rounded-[1.75rem] border shadow-[0_18px_60px_rgba(0,0,0,0.12)] transition-[background-color,border-color,backdrop-filter,box-shadow] duration-500 before:pointer-events-none before:absolute before:inset-0 before:bg-[linear-gradient(110deg,rgba(75,49,212,0.12),transparent_34%,rgba(216,65,42,0.12))] before:opacity-70 sm:top-4 sm:inset-x-4 md:rounded-full dark:shadow-[0_18px_70px_rgba(0,0,0,0.35)] dark:before:bg-[linear-gradient(110deg,rgba(163,148,255,0.12),transparent_34%,rgba(255,124,94,0.10))] ${
         scrolled || menuOpen
