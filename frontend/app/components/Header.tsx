@@ -27,6 +27,14 @@ export function Header() {
   const [focusInside, setFocusInside] = useState(false);
   const [hiddenY, setHiddenY] = useState(-100);
 
+  /* The header floats at `top-3`/`top-4` rather than flush with the
+     viewport edge, so a flat `y: "-100%"` (relative to the header's own
+     height) used to leave that offset's worth of it stuck on screen when
+     "hidden" -- a rounded sliver welded to the top of the page (#23).
+     Measuring the actual offset and height and animating to that pixel
+     value instead means the header always clears the viewport fully,
+     regardless of which breakpoint's `top` is active or how tall the
+     header currently is (e.g. the mobile menu open). */
   useEffect(() => {
     const header = headerRef.current;
     if (!header) return;
