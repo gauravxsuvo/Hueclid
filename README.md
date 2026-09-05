@@ -22,9 +22,11 @@ This is an early-stage project, built openly and in phases rather than all at on
 
 - The core color math is implemented and verified: sRGB to CIELAB conversion, and CIEDE2000 color difference, both vectorized in NumPy and checked against the published Sharma et al. (2005) reference test data, all 34 pairs passing to within 1e-4.
 - Round-trip conversion has been property-tested across 10,000 random colors with a maximum error well under one part in a million.
+- Oklab and Oklch are also implemented and conformance-checked, against CSS Color 4's reference matrices, for the perceptually-Euclidean clustering arm planned for a later phase.
+- Out-of-gamut colors are gamut-mapped in Oklch, chroma reduced with lightness and hue held fixed, instead of hard-clipped.
 - Lab-space histogram binning and a weighted k-means palette extractor are implemented and verified against a real test image with known color regions.
 - A working API (FastAPI) and a working web page (Next.js) exist, and have been tested together end to end: upload an image, get back a ranked, weighted palette.
-- Not deployed publicly. That's deliberate for now: the project runs and gets tested entirely on localhost while it's being built, and public hosting is a separate step that happens once the work is further along.
+- Hosted publicly at [hueclid.cinexg.com](https://hueclid.cinexg.com), though the tool and the algorithm are both still early: the perceptually-correct clustering and the accessibility-constrained solver, the actual research contribution, are still ahead.
 
 For the color-science background and reasoning behind the approach, see `math-explained/` and `blueprint/`.
 
