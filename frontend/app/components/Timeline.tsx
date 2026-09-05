@@ -123,7 +123,7 @@ function Node({
               milestone.status === "released"
                 ? "border-violet/40 text-violet"
                 : milestone.status === "active"
-                  ? "border-coral/40 text-coral"
+                  ? "border-coral/40 text-coral-text"
                   : "border-line text-faint"
             }`}
           >

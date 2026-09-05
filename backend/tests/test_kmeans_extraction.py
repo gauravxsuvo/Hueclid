@@ -10,12 +10,13 @@ and each recovered color close (in dE00) to the region it came from.
 from __future__ import annotations
 
 import io
+import tracemalloc
 
 import numpy as np
 import pytest
 from PIL import Image
 
-from app.clustering.kmeans import extract_palette
+from app.clustering.kmeans import ImageTooLargeError, extract_palette
 from app.color.deltae2000 import delta_e2000_matrix
 from app.color.srgb_lab import srgb_to_lab
 
@@ -136,3 +137,46 @@ def test_extract_palette_partial_transparency_blends_toward_white():
     r, g, b = result["palette"][0]["rgb"]
     assert r > 220  # blended toward white, not left at the raw 220
     assert g > 30 and b > 30
+
+
+def test_extract_palette_large_jpeg_reports_true_resolution_and_stays_bounded():
+    """Regression test for #29.
+
+    A 48MP JPEG ("iPhone max" resolution from the issue) used to get
+    decoded and converted to float64 at full resolution before ever being
+    resized, which is what made real phone uploads OOM the container. The
+    `draft()` decode brings this down to roughly 2016x1512 before any array
+    conversion happens (matching the issue's own measurement), so peak
+    allocation should stay well below what a naive full-res float64
+    conversion would cost (48e6 * 3 * 8 bytes =~ 1.1GB just for the first
+    array), while the reported image_size still reflects the true upload
+    resolution, not the internally shrunk decode size.
+    """
+    width, height = 8064, 6048  # 48MP, 4:3, the issue's "iPhone max" case
+    img = Image.new("RGB", (width, height), color=(120, 60, 200))
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG", quality=90)
+    image_bytes = buf.getvalue()
+
+    tracemalloc.start()
+    try:
+        result = extract_palette(image_bytes, k=3)
+    finally:
+        _, peak = tracemalloc.get_traced_memory()
+        tracemalloc.stop()
+
+    assert result["image_size"] == {"width": width, "height": height}
+    assert peak < 400 * 1024 * 1024  # measured ~290MB with the draft() decode, ~1.1GB without it
+
+
+def test_extract_palette_rejects_oversized_png():
+    # PNG can't be DCT-scaled during decode the way JPEG can, so a very
+    # large PNG needs its own ceiling. A flat color compresses to a tiny
+    # file regardless of pixel count, which is exactly the case the byte
+    # size limit in the API layer doesn't catch.
+    img = Image.new("RGB", (9000, 9000), color=(10, 10, 10))  # 81MP
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+
+    with pytest.raises(ImageTooLargeError):
+        extract_palette(buf.getvalue(), k=3)
