@@ -18,8 +18,25 @@ from app.color.srgb_lab import lab_to_srgb, linear_to_xyz, srgb_to_linear, xyz_t
 
 _RESIZE_LONG_EDGE = 512
 
+# Only changes the cost of decoding a JPEG, not what it looks like: libjpeg
+# can DCT-scale straight to roughly this size, well above _RESIZE_LONG_EDGE
+# so the real, quality-affecting downscale still happens in linear light in
+# _resize_linear below (issue #29 -- a 48MP phone photo was being decoded
+# and converted to float64 at full resolution before ever being resized).
+_DRAFT_LONG_EDGE = 1024
 
-def _decode_rgb(image_bytes: bytes) -> Image.Image:
+# Backstop for formats draft() can't shrink during decode (PNG, WEBP): a
+# ceiling on decoded pixel count so an oversized upload gets a clear
+# rejection instead of an out-of-memory crash.
+_MAX_DECODE_PIXELS = 40_000_000
+
+
+class ImageTooLargeError(ValueError):
+    """Decoded image exceeds the pixel budget the pipeline can convert to
+    float in memory (issue #29)."""
+
+
+def _decode_rgb(image_bytes: bytes) -> tuple[Image.Image, tuple[int, int]]:
     """Decode the upload to a flat RGB image.
 
     Pillow's `.convert("RGB")` on an image with an alpha channel doesn't
@@ -31,14 +48,28 @@ def _decode_rgb(image_bytes: bytes) -> Image.Image:
     makes a transparent pixel contribute white, the same as it would
     render in a browser over a light page, and a partially transparent
     one blends toward white instead of keeping its hidden raw value.
+
+    Returns the flat RGB image plus its size *before* the JPEG draft
+    scaling below, since that's the resolution the caller wants to report.
     """
     img = Image.open(io.BytesIO(image_bytes))
+    orig_size = img.size
+
+    # No-op for anything that isn't JPEG/MPO; safe to call unconditionally.
+    img.draft("RGB", (_DRAFT_LONG_EDGE, _DRAFT_LONG_EDGE))
+
+    if img.width * img.height > _MAX_DECODE_PIXELS:
+        raise ImageTooLargeError(
+            f"Image resolution too large ({img.width}x{img.height}px, "
+            f"max {_MAX_DECODE_PIXELS // 1_000_000} megapixels)"
+        )
+
     has_alpha = img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info)
     if has_alpha:
         img = img.convert("RGBA")
         backing = Image.new("RGBA", img.size, (255, 255, 255, 255))
         img = Image.alpha_composite(backing, img)
-    return img.convert("RGB")
+    return img.convert("RGB"), orig_size
 
 
 def _resize_linear(linear_rgb: np.ndarray, target_long_edge: int) -> np.ndarray:
@@ -67,8 +98,7 @@ def _to_hex(rgb_255: np.ndarray) -> str:
 
 
 def extract_palette(image_bytes: bytes, k: int = 5) -> dict:
-    img = _decode_rgb(image_bytes)
-    orig_w, orig_h = img.size
+    img, (orig_w, orig_h) = _decode_rgb(image_bytes)
 
     srgb = np.asarray(img, dtype=np.float64) / 255.0
     linear = srgb_to_linear(srgb)

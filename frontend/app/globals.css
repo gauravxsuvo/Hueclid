@@ -17,7 +17,13 @@
   --surface: #fbfaf7;
   --surface-2: #ece9e2;
   --foreground: #16151a;
-  --muted: #6c6960;
+  /* Darkened from #6c6960 (issue #28): the header is a translucent,
+     blurred surface, so text-muted nav links sometimes sit over the
+     hero's saturated color band rather than over plain --background.
+     #6c6960 was already marginal on plain --background (as low as
+     4.22:1 depending on section) and dropped as low as 3.62:1 over the
+     color band. #524f47 clears 4.5:1 with margin against both. */
+  --muted: #524f47;
   --faint: #716b5b;
   --line: rgba(22, 21, 26, 0.12);
   --line-strong: rgba(22, 21, 26, 0.28);
@@ -27,6 +33,14 @@
   --teal: #0c7a6b;
   --amber: #b8790a;
   --plum: #8e2f74;
+
+  /* Coral doing text duty (error messages, the "in progress" status
+     label) needs its own token: #d8412a on --background is 3.99:1,
+     under AA's 4.5:1 for text this size, even though it reads fine as a
+     decorative accent (gradients, borders, dots) where that threshold
+     doesn't apply. Darkened until it clears 4.5:1 against both
+     --background and --surface (issue #34). */
+  --coral-text: #c0331d;
 
   --grain-opacity: 0.05;
   --blob-opacity: 0.2;
@@ -57,6 +71,10 @@
   --amber: #f2bd4e;
   --plum: #eb84c7;
 
+  /* Dark theme coral already clears AA as text (7.8:1), so the text
+     token can just be the same color here. */
+  --coral-text: #ff7c5e;
+
   --grain-opacity: 0.07;
   --blob-opacity: 0.26;
 
@@ -80,6 +98,7 @@
 
   --color-violet: var(--violet);
   --color-coral: var(--coral);
+  --color-coral-text: var(--coral-text);
   --color-teal: var(--teal);
   --color-amber: var(--amber);
   --color-plum: var(--plum);

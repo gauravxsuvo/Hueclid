@@ -6,7 +6,7 @@ import logging
 
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile
 
-from app.clustering.kmeans import extract_palette
+from app.clustering.kmeans import ImageTooLargeError, extract_palette
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +36,8 @@ async def extract(
 
     try:
         return extract_palette(image_bytes, k=k)
+    except ImageTooLargeError as exc:
+        raise HTTPException(status_code=413, detail=str(exc)) from None
     except Exception:  # noqa: BLE001 -- surface as a 400, not a 500
         logger.exception("Failed to extract palette from uploaded image")
         raise HTTPException(status_code=400, detail="Could not process image") from None

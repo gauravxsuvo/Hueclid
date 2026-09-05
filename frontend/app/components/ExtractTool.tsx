@@ -9,6 +9,10 @@ import { SamplePicker, type Sample } from "./SamplePicker";
 import { EASE } from "./motion";
 
 const VALID_FILE_TYPES = ["image/png", "image/jpeg", "image/webp"];
+// Mirrors _MAX_UPLOAD_BYTES in backend/app/api/extract.py -- the two need
+// to stay in step, kept here as a single duplicated number rather than an
+// extra round trip to ask the API for its own limit.
+const MAX_UPLOAD_BYTES = 15 * 1024 * 1024;
 const MIN_K = 1;
 const MAX_K = 12;
 const DEFAULT_K = 5;
@@ -99,6 +103,10 @@ export function ExtractTool() {
   function handleFileChange(selected: File | null) {
     if (selected && !VALID_FILE_TYPES.includes(selected.type)) {
       setError("Invalid file type. Please upload a PNG, JPEG, or WEBP.");
+      return;
+    }
+    if (selected && selected.size > MAX_UPLOAD_BYTES) {
+      setError("Image too large (max 15 MB).");
       return;
     }
 
@@ -255,7 +263,7 @@ export function ExtractTool() {
                 </motion.svg>
                 <span className="text-sm">Drop an image here, or click to choose one</span>
                 <span className="font-mono text-[10px] tracking-[0.18em] text-faint uppercase">
-                  PNG &middot; JPEG &middot; WEBP
+                  PNG &middot; JPEG &middot; WEBP &middot; up to 15MB
                 </span>
               </div>
             )}
@@ -344,11 +352,11 @@ export function ExtractTool() {
 
           <div role="status" aria-live="polite" className="min-h-6 pt-3 text-sm">
             {!colorsValid && (
-              <p id="colors-count-hint" className="text-coral">
+              <p id="colors-count-hint" className="text-coral-text">
                 Enter a whole number between {MIN_K} and {MAX_K}.
               </p>
             )}
-            {error && <p className="text-coral">{error}</p>}
+            {error && <p className="text-coral-text">{error}</p>}
             {loading && (
               <p className="flex items-center gap-2 text-muted">
                 <motion.span
