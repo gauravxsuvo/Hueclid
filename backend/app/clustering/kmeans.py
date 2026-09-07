@@ -104,7 +104,13 @@ def _to_hex(rgb_255: np.ndarray) -> str:
     return f"#{r:02x}{g:02x}{b:02x}"
 
 
-def extract_palette(image_bytes: bytes, k: int = 5, db_session=None) -> dict:
+def compute_lab_bins(image_bytes: bytes, db_session=None) -> dict:
+    """Decode + linear-light resize + Lab histogram binning, or a cache hit.
+
+    This is the deterministic, cacheable half of the pipeline (PLAN.md
+    4.3): shared by extract_palette and by dataset ingestion, which only
+    needs the bins, not a clustered palette.
+    """
     image_hash = hash_image_bytes(image_bytes)
 
     cached = None
@@ -137,6 +143,21 @@ def extract_palette(image_bytes: bytes, k: int = 5, db_session=None) -> dict:
                 _B_STEP,
             )
 
+    return {
+        "image_hash": image_hash,
+        "bin_points": bin_points,
+        "weights": weights,
+        "width": orig_w,
+        "height": orig_h,
+        "cache_hit": cached is not None,
+    }
+
+
+def extract_palette(image_bytes: bytes, k: int = 5, db_session=None) -> dict:
+    bins = compute_lab_bins(image_bytes, db_session=db_session)
+    bin_points, weights = bins["bin_points"], bins["weights"]
+    orig_w, orig_h = bins["width"], bins["height"]
+
     n_clusters = min(k, bin_points.shape[0])
     km = KMeans(n_clusters=n_clusters, n_init=10, random_state=0)
     km.fit(bin_points, sample_weight=weights)
@@ -168,5 +189,5 @@ def extract_palette(image_bytes: bytes, k: int = 5, db_session=None) -> dict:
         "k": n_clusters,
         "image_size": {"width": orig_w, "height": orig_h},
         "histogram_bins": int(bin_points.shape[0]),
-        "cache_hit": cached is not None,
+        "cache_hit": bins["cache_hit"],
     }
