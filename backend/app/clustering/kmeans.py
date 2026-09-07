@@ -13,10 +13,17 @@ import numpy as np
 from PIL import Image
 from sklearn.cluster import KMeans
 
+from app.cache.histogram_cache import get_cached_bins, hash_image_bytes, store_bins
 from app.clustering.histogram import build_lab_histogram
 from app.color.srgb_lab import lab_to_srgb, linear_to_xyz, srgb_to_linear, xyz_to_lab
 
 _RESIZE_LONG_EDGE = 512
+
+# The Lab histogram grid (PLAN.md 2.4a). Cache entries are keyed on the
+# image hash but only reused if they were binned at this same grid.
+_L_STEP = 2.0
+_A_STEP = 2.0
+_B_STEP = 2.0
 
 # Only changes the cost of decoding a JPEG, not what it looks like: libjpeg
 # can DCT-scale straight to roughly this size, well above _RESIZE_LONG_EDGE
@@ -97,16 +104,38 @@ def _to_hex(rgb_255: np.ndarray) -> str:
     return f"#{r:02x}{g:02x}{b:02x}"
 
 
-def extract_palette(image_bytes: bytes, k: int = 5) -> dict:
-    img, (orig_w, orig_h) = _decode_rgb(image_bytes)
+def extract_palette(image_bytes: bytes, k: int = 5, db_session=None) -> dict:
+    image_hash = hash_image_bytes(image_bytes)
 
-    srgb = np.asarray(img, dtype=np.float64) / 255.0
-    linear = srgb_to_linear(srgb)
-    linear = _resize_linear(linear, _RESIZE_LONG_EDGE)
+    cached = None
+    if db_session is not None:
+        cached = get_cached_bins(db_session, image_hash, _L_STEP, _A_STEP, _B_STEP)
 
-    lab = xyz_to_lab(linear_to_xyz(linear)).reshape(-1, 3)
+    if cached is not None:
+        bin_points, weights, orig_w, orig_h = cached
+    else:
+        img, (orig_w, orig_h) = _decode_rgb(image_bytes)
 
-    bin_points, weights = build_lab_histogram(lab)
+        srgb = np.asarray(img, dtype=np.float64) / 255.0
+        linear = srgb_to_linear(srgb)
+        linear = _resize_linear(linear, _RESIZE_LONG_EDGE)
+
+        lab = xyz_to_lab(linear_to_xyz(linear)).reshape(-1, 3)
+
+        bin_points, weights = build_lab_histogram(lab, _L_STEP, _A_STEP, _B_STEP)
+
+        if db_session is not None:
+            store_bins(
+                db_session,
+                image_hash,
+                bin_points,
+                weights,
+                orig_w,
+                orig_h,
+                _L_STEP,
+                _A_STEP,
+                _B_STEP,
+            )
 
     n_clusters = min(k, bin_points.shape[0])
     km = KMeans(n_clusters=n_clusters, n_init=10, random_state=0)
@@ -139,4 +168,5 @@ def extract_palette(image_bytes: bytes, k: int = 5) -> dict:
         "k": n_clusters,
         "image_size": {"width": orig_w, "height": orig_h},
         "histogram_bins": int(bin_points.shape[0]),
+        "cache_hit": cached is not None,
     }

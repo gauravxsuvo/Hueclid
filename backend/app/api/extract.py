@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter, File, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from sqlalchemy.orm import Session
 
 from app.clustering.kmeans import ImageTooLargeError, extract_palette
+from app.db import get_db_session
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +22,7 @@ _ALLOWED_CONTENT_TYPES = {"image/png", "image/jpeg", "image/webp"}
 async def extract(
     file: UploadFile = File(...),
     k: int = Query(5, ge=1, le=12, description="Number of palette colors to extract"),
+    db: Session | None = Depends(get_db_session),
 ) -> dict:
     if file.content_type not in _ALLOWED_CONTENT_TYPES:
         raise HTTPException(
@@ -35,7 +38,7 @@ async def extract(
         raise HTTPException(status_code=413, detail="Image too large (max 15 MB)")
 
     try:
-        return extract_palette(image_bytes, k=k)
+        return extract_palette(image_bytes, k=k, db_session=db)
     except ImageTooLargeError as exc:
         raise HTTPException(status_code=413, detail=str(exc)) from None
     except Exception:  # noqa: BLE001 -- surface as a 400, not a 500
