@@ -68,6 +68,25 @@ def test_ingest_dataset_is_idempotent_and_resumable(session, tmp_path):
     assert session.query(DatasetImage).count() == 2
 
 
+def test_ingest_dataset_parallel_matches_sequential(session, tmp_path):
+    _make_dataset_tree(tmp_path)
+
+    summary = ingest_dataset(session, "rico", tmp_path, workers=2)
+
+    assert summary["seen"] == 3
+    assert summary["ingested"] == 2
+    assert summary["skipped"] == 1
+
+    rows = {r.relpath for r in session.query(DatasetImage).all()}
+    assert rows == {"a.png", "sub/b.jpg"}
+    assert session.query(HistogramCacheEntry).count() == 2
+
+    # Resuming with workers>1 also skips already-ingested files.
+    second = ingest_dataset(session, "rico", tmp_path, workers=2)
+    assert second["ingested"] == 0
+    assert second["skipped"] == 3
+
+
 def test_ingest_dataset_different_datasets_do_not_collide(session, tmp_path):
     _make_dataset_tree(tmp_path)
 

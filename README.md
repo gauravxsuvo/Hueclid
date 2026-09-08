@@ -26,6 +26,7 @@ This is an early-stage project, built openly and in phases rather than all at on
 - Out-of-gamut colors are gamut-mapped in Oklch, chroma reduced with lightness and hue held fixed, instead of hard-clipped.
 - Lab-space histogram binning and a weighted k-means palette extractor are implemented and verified against a real test image with known color regions.
 - A working API (FastAPI) and a working web page (Next.js) exist, and have been tested together end to end: upload an image, get back a ranked, weighted palette.
+- The data pipeline for the upcoming perceptually-correct clustering work is built: a Postgres-backed cache of Lab-space histogram bins keyed by image hash, and a parallel ingestion tool validated against three real UI datasets, Rico, Enrico, and WebUI, over 100,000 real screenshots binned and cached.
 - Hosted publicly at [hueclid.cinexg.com](https://hueclid.cinexg.com), though the tool and the algorithm are both still early: the perceptually-correct clustering and the accessibility-constrained solver, the actual research contribution, are still ahead.
 
 For the color-science background and reasoning behind the approach, see `math-explained/` and `blueprint/`.
