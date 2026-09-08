@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: hueclid
+      POSTGRES_PASSWORD: hueclid
+      POSTGRES_DB: hueclid
+    ports:
+      - "5432:5432"
+    volumes:
+      - hueclid-db-data:/var/lib/postgresql/data
+
+volumes:
+  hueclid-db-data:
