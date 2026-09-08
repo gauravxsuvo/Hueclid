@@ -38,3 +38,15 @@ Thumbs.db
 # Local hosting notes for this machine's deploy setup -- not part of the
 # product, never pushed
 /portway-README.md
+/portways-hosting-guide.md
+
+# Downloaded Rico/Enrico/WebUI dataset data (Phase 2 ingestion) -- fetched
+# locally per AGENT.md's dataset-download rule, gigabytes in size, never
+# part of the repo. The Postgres histogram cache is the durable copy.
+/enrico/
+/rico/
+/webui/
+/webui-7k/
+/unique_uis/
+/screenshots.zip
+/unique_uis.tar.gz
