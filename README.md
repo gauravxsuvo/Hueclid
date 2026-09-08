@@ -50,6 +50,8 @@ python -m venv .venv
 
 That installs NumPy, scikit-learn, Pillow, FastAPI, and the test tooling, runs the full test suite, and starts the API on `http://localhost:8000`.
 
+The API works fully without one, but if you want the Postgres-backed histogram cache (used by dataset ingestion, see `backend/app/ingest/`), start a local database with `docker compose up -d db` and set `DATABASE_URL` per `backend/.env.example`.
+
 The frontend is Next.js. From `frontend/`:
 
 ```
