@@ -45,6 +45,8 @@ Thumbs.db
 # part of the repo. The Postgres histogram cache is the durable copy.
 /enrico/
 /rico/
+# unique_uis.tar.gz extracts to this name, not "rico/"
+/combined/
 /webui/
 /webui-7k/
 /unique_uis/
