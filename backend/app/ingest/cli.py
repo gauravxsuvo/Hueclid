@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
 from pathlib import Path
 
@@ -22,12 +23,23 @@ from app.ingest.pipeline import ingest_dataset
 
 _DATASETS = {"rico", "enrico", "webui"}
 
+# The decode/resize/Lab/bin step is CPU-bound and dominates wall-clock
+# time (~250-350ms/image vs. ~5ms for the Postgres write), so it's worth
+# parallelizing by default; leave a couple of cores free for the OS/DB.
+_DEFAULT_WORKERS = max(1, (os.cpu_count() or 2) - 2)
+
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dataset", required=True, choices=sorted(_DATASETS))
     parser.add_argument(
         "--path", required=True, type=Path, help="Directory containing the downloaded images"
+    )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=_DEFAULT_WORKERS,
+        help=f"Parallel worker processes for decode/resize/binning (default: {_DEFAULT_WORKERS})",
     )
     args = parser.parse_args(argv)
 
@@ -44,7 +56,7 @@ def main(argv: list[str] | None = None) -> int:
     init_db()
     session = next(get_db_session())
     try:
-        summary = ingest_dataset(session, args.dataset, args.path)
+        summary = ingest_dataset(session, args.dataset, args.path, workers=args.workers)
     finally:
         session.close()
 
