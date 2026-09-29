@@ -103,13 +103,13 @@ def test_extract_palette_reports_cache_hit_and_skips_recompute(session, monkeypa
     image_bytes = _make_flat_png()
 
     calls = {"n": 0}
-    original_decode = kmeans._decode_rgb
+    original_decode = kmeans.decode_rgb
 
     def counting_decode(b: bytes):
         calls["n"] += 1
         return original_decode(b)
 
-    monkeypatch.setattr(kmeans, "_decode_rgb", counting_decode)
+    monkeypatch.setattr(kmeans, "decode_rgb", counting_decode)
 
     first = kmeans.extract_palette(image_bytes, k=3, db_session=session)
     assert first["cache_hit"] is False
